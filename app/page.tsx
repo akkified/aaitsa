@@ -1,103 +1,388 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { Calendar, Users, BookOpen, ArrowRight, Star, Target, Lightbulb } from "lucide-react"
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <nav className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-lg">AA</span>
+              </div>
+              <div>
+                <h1 className="font-bold text-xl text-foreground">Alliance Academy</h1>
+                <p className="text-sm text-muted-foreground">Innovation Technology TSA</p>
+              </div>
+            </div>
+            <div className="hidden md:flex items-center space-x-6">
+              <Link href="#about" className="text-foreground hover:text-primary transition-colors">
+                About
+              </Link>
+              <Link href="#events" className="text-foreground hover:text-primary transition-colors">
+                Events
+              </Link>
+              <Link href="#resources" className="text-foreground hover:text-primary transition-colors">
+                Resources
+              </Link>
+              <Link href="#contact" className="text-foreground hover:text-primary transition-colors">
+                Contact
+              </Link>
+              <Button asChild>
+                <Link href="/my">Student Portal</Link>
+              </Button>
+            </div>
+          </nav>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </header>
+
+      {/* Hero Section */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto text-center">
+          <Badge variant="secondary" className="mb-4">
+            Technology Student Association
+          </Badge>
+          <h1 className="text-4xl md:text-6xl font-bold text-balance mb-6">
+            Innovating the Future Through <span className="text-primary">Technology</span>
+          </h1>
+          <p className="text-xl text-muted-foreground text-balance mb-8 max-w-2xl mx-auto">
+            Join Alliance Academy's TSA chapter where students explore STEM careers, compete in technology competitions,
+            and develop leadership skills for tomorrow's challenges.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" asChild>
+              <Link href="/my">
+                Join Our Chapter <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="#about">Learn More</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-3xl font-bold text-primary mb-2">150+</div>
+              <div className="text-muted-foreground">Active Members</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-primary mb-2">25+</div>
+              <div className="text-muted-foreground">Competitions</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-primary mb-2">12</div>
+              <div className="text-muted-foreground">State Awards</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-primary mb-2">5</div>
+              <div className="text-muted-foreground">National Qualifiers</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section id="about" className="py-20 px-4">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">About Our Chapter</h2>
+            <p className="text-xl text-muted-foreground text-balance max-w-2xl mx-auto">
+              The Technology Student Association (TSA) is a national organization devoted to students engaged in
+              science, technology, engineering, and mathematics (STEM).
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card>
+              <CardHeader>
+                <Target className="h-8 w-8 text-primary mb-2" />
+                <CardTitle>Our Mission</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  To promote technological literacy, leadership, and problem-solving skills through engaging STEM
+                  activities and competitions.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Lightbulb className="h-8 w-8 text-primary mb-2" />
+                <CardTitle>Innovation Focus</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Students explore cutting-edge technologies including robotics, programming, engineering design, and
+                  digital media production.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Star className="h-8 w-8 text-primary mb-2" />
+                <CardTitle>Excellence</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Our chapter consistently ranks among the top performers in state and national TSA competitions across
+                  multiple categories.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Events Section */}
+      <section id="events" className="py-20 px-4 bg-muted/30">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Upcoming Events</h2>
+            <p className="text-xl text-muted-foreground">
+              Stay updated with our latest competitions, meetings, and activities.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <Badge variant="secondary">Competition</Badge>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <CardTitle>State TSA Conference</CardTitle>
+                <CardDescription>March 15-17, 2024</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Annual state-level competition featuring 40+ events across all STEM disciplines.
+                </p>
+                <Button size="sm" variant="outline" className="w-full bg-transparent">
+                  Learn More
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <Badge variant="secondary">Workshop</Badge>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <CardTitle>Robotics Workshop</CardTitle>
+                <CardDescription>February 28, 2024</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Hands-on workshop covering robot design, programming, and competition strategies.
+                </p>
+                <Button size="sm" variant="outline" className="w-full bg-transparent">
+                  Register
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <Badge variant="secondary">Meeting</Badge>
+                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <CardTitle>Chapter Meeting</CardTitle>
+                <CardDescription>Every Friday, 3:30 PM</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Weekly meetings to discuss projects, plan events, and prepare for competitions.
+                </p>
+                <Button size="sm" variant="outline" className="w-full bg-transparent">
+                  Join Us
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Resources Section */}
+      <section id="resources" className="py-20 px-4">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Resources</h2>
+            <p className="text-xl text-muted-foreground">
+              Access helpful materials, guidelines, and tools for TSA success.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Competition Guidelines</CardTitle>
+                <CardDescription>Official rules and requirements for all TSA events</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• Event descriptions and rules</li>
+                  <li>• Submission requirements</li>
+                  <li>• Judging criteria</li>
+                  <li>• Timeline and deadlines</li>
+                </ul>
+                <Button className="mt-4 bg-transparent" variant="outline">
+                  View Guidelines
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Member Resources</CardTitle>
+                <CardDescription>Tools and materials for chapter members</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• Project templates</li>
+                  <li>• Software tutorials</li>
+                  <li>• Meeting schedules</li>
+                  <li>• Contact information</li>
+                </ul>
+                <Button className="mt-4 bg-transparent" variant="outline" asChild>
+                  <Link href="/my">Access Portal</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 px-4 bg-muted/30">
+        <div className="container mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Get Involved</h2>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Ready to join our innovative community? Contact us to learn more about membership opportunities and upcoming
+            events.
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div>
+              <h3 className="font-semibold mb-2">Faculty Advisor</h3>
+              <p className="text-muted-foreground">Ms. Johnson</p>
+              <p className="text-sm text-muted-foreground">tjohnson@allianceacademy.edu</p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Chapter President</h3>
+              <p className="text-muted-foreground">Alex Chen</p>
+              <p className="text-sm text-muted-foreground">president@allianceacademy.edu</p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Meeting Location</h3>
+              <p className="text-muted-foreground">Room 204, STEM Building</p>
+              <p className="text-sm text-muted-foreground">Fridays, 3:30-4:30 PM</p>
+            </div>
+          </div>
+
+          <Button size="lg" asChild>
+            <Link href="/my">Join Our Chapter Today</Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-12 px-4">
+        <div className="container mx-auto">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold">AA</span>
+                </div>
+                <span className="font-semibold">Alliance Academy TSA</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Empowering students through technology education and innovation.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <Link href="#about" className="hover:text-primary">
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#events" className="hover:text-primary">
+                    Events
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#resources" className="hover:text-primary">
+                    Resources
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/my" className="hover:text-primary">
+                    Student Portal
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <a href="#" className="hover:text-primary">
+                    TSA National
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary">
+                    Competition Rules
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary">
+                    Member Handbook
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary">
+                    Calendar
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Contact</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>Alliance Academy</li>
+                <li>123 Innovation Drive</li>
+                <li>Tech City, TC 12345</li>
+                <li>info@allianceacademy.edu</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
+            <p>&copy; 2024 Alliance Academy TSA Chapter. All rights reserved.</p>
+          </div>
+        </div>
       </footer>
     </div>
-  );
+  )
 }

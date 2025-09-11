@@ -1,0 +1,215 @@
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { Plus, FileText, Clock, CheckCircle, XCircle, User, LogOut } from "lucide-react"
+
+export default async function DashboardPage() {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.auth.getUser()
+  if (error || !data?.user) {
+    redirect("/auth/login")
+  }
+
+  // Get user profile
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
+
+  // Get user submissions
+  const { data: submissions } = await supabase
+    .from("submissions")
+    .select("*")
+    .eq("user_id", data.user.id)
+    .order("submitted_at", { ascending: false })
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "approved":
+        return <CheckCircle className="h-4 w-4 text-green-600" />
+      case "rejected":
+        return <XCircle className="h-4 w-4 text-red-600" />
+      default:
+        return <Clock className="h-4 w-4 text-yellow-600" />
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "approved":
+        return "bg-green-100 text-green-800 border-green-200"
+      case "rejected":
+        return "bg-red-100 text-red-800 border-red-200"
+      default:
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-card/50 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link href="/" className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold">AA</span>
+                </div>
+                <span className="font-semibold">TSA Portal</span>
+              </Link>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">{profile?.full_name || data.user.email}</span>
+              </div>
+              <form action="/auth/signout" method="post">
+                <Button variant="ghost" size="sm" type="submit">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Welcome, {profile?.full_name || "Student"}!</h1>
+          <p className="text-muted-foreground">Manage your TSA competition submissions and track your progress.</p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Submissions</p>
+                  <p className="text-2xl font-bold">{submissions?.length || 0}</p>
+                </div>
+                <FileText className="h-8 w-8 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
+                  <p className="text-2xl font-bold">{submissions?.filter((s) => s.status === "pending").length || 0}</p>
+                </div>
+                <Clock className="h-8 w-8 text-yellow-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Approved</p>
+                  <p className="text-2xl font-bold">
+                    {submissions?.filter((s) => s.status === "approved").length || 0}
+                  </p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Grade Level</p>
+                  <p className="text-2xl font-bold capitalize">{profile?.school_year || "N/A"}</p>
+                </div>
+                <User className="h-8 w-8 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <Button asChild>
+            <Link href="/my/submit">
+              <Plus className="mr-2 h-4 w-4" />
+              New Submission
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/my/profile">Edit Profile</Link>
+          </Button>
+        </div>
+
+        {/* Submissions List */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Submissions</CardTitle>
+            <CardDescription>Track the status of your TSA competition entries</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {submissions && submissions.length > 0 ? (
+              <div className="space-y-4">
+                {submissions.map((submission) => (
+                  <div
+                    key={submission.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h3 className="font-semibold">{submission.title}</h3>
+                        <Badge className={`${getStatusColor(submission.status)} border`}>
+                          <span className="flex items-center space-x-1">
+                            {getStatusIcon(submission.status)}
+                            <span className="capitalize">{submission.status}</span>
+                          </span>
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-1">{submission.description}</p>
+                      <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                        <span>Category: {submission.category}</span>
+                        <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
+                      </div>
+                      {submission.feedback && (
+                        <div className="mt-2 p-2 bg-muted/50 rounded text-sm">
+                          <strong>Feedback:</strong> {submission.feedback}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/my/submissions/${submission.id}`}>View</Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No submissions yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Get started by submitting your first TSA competition entry.
+                </p>
+                <Button asChild>
+                  <Link href="/my/submit">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Your First Submission
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
