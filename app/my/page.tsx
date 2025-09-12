@@ -145,7 +145,7 @@ export default async function DashboardPage() {
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/my/submit">New Competition Entry</Link>
+            <Link href="/documents">New Competition Entry</Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href="/my/profile">Edit Profile</Link>
@@ -203,7 +203,7 @@ export default async function DashboardPage() {
                   Get started by submitting your first TSA competition entry.
                 </p>
                 <Button asChild>
-                  <Link href="/my/submit">
+                  <Link href="/documents">
                     <Plus className="mr-2 h-4 w-4" />
                     Create Your First Submission
                   </Link>
