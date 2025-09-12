@@ -1,28 +1,35 @@
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Plus, FileText, Clock, CheckCircle, XCircle, User, LogOut } from "lucide-react"
 
-export default async function DashboardPage() {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase.auth.getUser()
-  if (error || !data?.user) {
-    redirect("/auth/login")
+export default function DashboardPage() {
+  const mockUser = {
+    email: "student@example.com",
+    name: "John Doe",
   }
 
-  // Get user profile
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
-
-  // Get user submissions
-  const { data: submissions } = await supabase
-    .from("submissions")
-    .select("*")
-    .eq("user_id", data.user.id)
-    .order("submitted_at", { ascending: false })
+  const mockSubmissions = [
+    {
+      id: "1",
+      title: "Biotechnology Design Portfolio",
+      description: "Complete portfolio showcasing biotechnology innovation project",
+      category: "Biotechnology Design",
+      status: "pending",
+      submitted_at: "2024-01-15T10:00:00Z",
+      feedback: null,
+    },
+    {
+      id: "2",
+      title: "Engineering Design Process Documentation",
+      description: "Step-by-step documentation of engineering design methodology",
+      category: "Engineering Design",
+      status: "approved",
+      submitted_at: "2024-01-10T14:30:00Z",
+      feedback: "Excellent work! Great attention to detail in the design process.",
+    },
+  ]
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -55,7 +62,7 @@ export default async function DashboardPage() {
             <div className="flex items-center space-x-4">
               <Link href="/" className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold">AA</span>
+                  <span className="text-primary-foreground font-bold">TSA</span>
                 </div>
                 <span className="font-semibold">TSA Portal</span>
               </Link>
@@ -63,7 +70,7 @@ export default async function DashboardPage() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{profile?.full_name || data.user.email}</span>
+                <span className="text-sm text-muted-foreground">{mockUser.name}</span>
               </div>
               <form action="/api/auth/signout" method="post">
                 <Button variant="ghost" size="sm" type="submit">
@@ -79,7 +86,7 @@ export default async function DashboardPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome, {profile?.full_name || "Student"}!</h1>
+          <h1 className="text-3xl font-bold mb-2">Welcome, {mockUser.name}!</h1>
           <p className="text-muted-foreground">Manage your TSA competition submissions and track your progress.</p>
         </div>
 
@@ -90,7 +97,7 @@ export default async function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Submissions</p>
-                  <p className="text-2xl font-bold">{submissions?.length || 0}</p>
+                  <p className="text-2xl font-bold">{mockSubmissions.length}</p>
                 </div>
                 <FileText className="h-8 w-8 text-muted-foreground" />
               </div>
@@ -102,7 +109,7 @@ export default async function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
-                  <p className="text-2xl font-bold">{submissions?.filter((s) => s.status === "pending").length || 0}</p>
+                  <p className="text-2xl font-bold">{mockSubmissions.filter((s) => s.status === "pending").length}</p>
                 </div>
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
@@ -114,9 +121,7 @@ export default async function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Approved</p>
-                  <p className="text-2xl font-bold">
-                    {submissions?.filter((s) => s.status === "approved").length || 0}
-                  </p>
+                  <p className="text-2xl font-bold">{mockSubmissions.filter((s) => s.status === "approved").length}</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
@@ -128,7 +133,7 @@ export default async function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Grade Level</p>
-                  <p className="text-2xl font-bold capitalize">{profile?.school_year || "N/A"}</p>
+                  <p className="text-2xl font-bold">12th</p>
                 </div>
                 <User className="h-8 w-8 text-muted-foreground" />
               </div>
@@ -159,9 +164,9 @@ export default async function DashboardPage() {
             <CardDescription>Track the status of your TSA competition entries</CardDescription>
           </CardHeader>
           <CardContent>
-            {submissions && submissions.length > 0 ? (
+            {mockSubmissions.length > 0 ? (
               <div className="space-y-4">
-                {submissions.map((submission) => (
+                {mockSubmissions.map((submission) => (
                   <div
                     key={submission.id}
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"

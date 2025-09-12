@@ -1,10 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { createBrowserClient } from "@supabase/ssr"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -24,10 +22,6 @@ export default function DocumentSubmission() {
   const [dragActive, setDragActive] = useState(false)
 
   const router = useRouter()
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -73,33 +67,22 @@ export default function DocumentSubmission() {
     setError("")
 
     try {
-      // Check if user is authenticated
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
-        setError("You must be logged in to submit documents.")
-        setUploading(false)
-        return
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      // Store submission data in localStorage for demo
+      const submissions = JSON.parse(localStorage.getItem("submissions") || "[]")
+      const newSubmission = {
+        id: Date.now().toString(),
+        title,
+        description,
+        category,
+        fileName: file.name,
+        fileSize: file.size,
+        status: "pending",
+        submittedAt: new Date().toISOString(),
       }
-
-      // Upload file to Vercel Blob
-      const formData = new FormData()
-      formData.append("file", file)
-      formData.append("title", title)
-      formData.append("description", description)
-      formData.append("category", category)
-
-      const response = await fetch("/api/documents/upload", {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to upload document")
-      }
-
-      const result = await response.json()
+      submissions.push(newSubmission)
+      localStorage.setItem("submissions", JSON.stringify(submissions))
 
       // Redirect to success page
       router.push("/documents/success")

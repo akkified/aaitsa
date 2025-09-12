@@ -11,11 +11,9 @@ interface Document {
   id: string
   title: string
   description: string
-  file_name: string
-  file_url: string
-  file_size: number
-  file_type: string
-  submitted_at: string
+  fileName: string
+  fileSize: number
+  submittedAt: string
   status: string
   category: string
 }
@@ -23,27 +21,23 @@ interface Document {
 export default function DocumentList() {
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
 
   useEffect(() => {
-    fetchDocuments()
-  }, [])
-
-  const fetchDocuments = async () => {
-    try {
-      const response = await fetch("/api/documents")
-      if (!response.ok) {
-        throw new Error("Failed to fetch documents")
+    const loadDocuments = () => {
+      try {
+        const storedDocs = localStorage.getItem("submissions")
+        if (storedDocs) {
+          setDocuments(JSON.parse(storedDocs))
+        }
+      } catch (err) {
+        console.error("Error loading documents:", err)
+      } finally {
+        setLoading(false)
       }
-      const data = await response.json()
-      setDocuments(data.documents || [])
-    } catch (err) {
-      console.error("Fetch error:", err)
-      setError("Failed to load documents")
-    } finally {
-      setLoading(false)
     }
-  }
+
+    loadDocuments()
+  }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -82,16 +76,6 @@ export default function DocumentList() {
         <CardContent className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your documents...</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <p className="text-red-600">{error}</p>
         </CardContent>
       </Card>
     )
@@ -137,25 +121,22 @@ export default function DocumentList() {
                   <div className="flex items-center gap-4 text-xs text-gray-500">
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {formatDate(document.submitted_at)}
+                      {formatDate(document.submittedAt)}
                     </span>
                     <span>Category: {document.category}</span>
-                    <span>Size: {formatFileSize(document.file_size)}</span>
+                    <span>Size: {formatFileSize(document.fileSize)}</span>
+                    <span>File: {document.fileName}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 ml-4">
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={document.file_url} target="_blank" rel="noopener noreferrer">
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </a>
+                  <Button variant="outline" size="sm" disabled>
+                    <Eye className="h-4 w-4 mr-1" />
+                    View
                   </Button>
 
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={document.file_url} download={document.file_name}>
-                      <Download className="h-4 w-4" />
-                    </a>
+                  <Button variant="outline" size="sm" disabled>
+                    <Download className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
