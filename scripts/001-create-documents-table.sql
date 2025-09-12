@@ -30,7 +30,7 @@ CREATE POLICY "Admins can view all documents" ON documents
     EXISTS (
       SELECT 1 FROM auth.users 
       WHERE auth.users.id = auth.uid() 
-      AND (auth.users.email LIKE '%@admin.%' OR auth.users.email = 'akki.akella@gmail.com')
+      AND (auth.users.email LIKE '%@admin.%' OR auth.users.email = 'admin@allianceacademy.org')
     )
   );
 
@@ -40,6 +40,6 @@ CREATE POLICY "Admins can update documents" ON documents
     EXISTS (
       SELECT 1 FROM auth.users 
       WHERE auth.users.id = auth.uid() 
-      AND (auth.users.email LIKE '%@admin.%' OR auth.users.email = 'akki.akella@gmail.com')
+      AND (auth.users.email LIKE '%@admin.%' OR auth.users.email = 'admin@allianceacademy.org')
     )
   );

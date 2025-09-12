@@ -65,7 +65,7 @@ export default async function DashboardPage() {
                 <User className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">{profile?.full_name || data.user.email}</span>
               </div>
-              <form action="/auth/signout" method="post">
+              <form action="/api/auth/signout" method="post">
                 <Button variant="ghost" size="sm" type="submit">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
