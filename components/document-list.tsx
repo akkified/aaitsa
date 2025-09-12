@@ -26,9 +26,39 @@ export default function DocumentList() {
     const loadDocuments = () => {
       try {
         const storedDocs = localStorage.getItem("submissions")
+        let docs: Document[] = []
+
         if (storedDocs) {
-          setDocuments(JSON.parse(storedDocs))
+          docs = JSON.parse(storedDocs)
+        } else {
+          docs = [
+            {
+              id: "demo-1",
+              title: "Robotics Competition Entry - Autonomous Navigation",
+              description:
+                "Our team's entry for the autonomous navigation challenge, featuring advanced sensor integration and machine learning algorithms.",
+              fileName: "robotics-navigation-project.pdf",
+              fileSize: 2456789,
+              submittedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+              status: "approved",
+              category: "competition",
+            },
+            {
+              id: "demo-2",
+              title: "Software Development Project Proposal",
+              description:
+                "Proposal for developing a mobile app to help students track their TSA competition progress and deadlines.",
+              fileName: "mobile-app-proposal.docx",
+              fileSize: 1234567,
+              submittedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+              status: "under_review",
+              category: "project",
+            },
+          ]
+          localStorage.setItem("submissions", JSON.stringify(docs))
         }
+
+        setDocuments(docs)
       } catch (err) {
         console.error("Error loading documents:", err)
       } finally {

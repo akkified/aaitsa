@@ -51,6 +51,7 @@ export default function DocumentSubmission() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("[v0] Document submission started")
 
     if (!title || !file || !category) {
       setError("Please fill in all required fields and select a file.")
@@ -67,6 +68,8 @@ export default function DocumentSubmission() {
     setError("")
 
     try {
+      console.log("[v0] Processing file upload simulation")
+      // Simulate upload delay
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
       // Store submission data in localStorage for demo
@@ -84,10 +87,12 @@ export default function DocumentSubmission() {
       submissions.push(newSubmission)
       localStorage.setItem("submissions", JSON.stringify(submissions))
 
+      console.log("[v0] Document submission successful:", newSubmission)
+
       // Redirect to success page
       router.push("/documents/success")
     } catch (err) {
-      console.error("Upload error:", err)
+      console.error("[v0] Upload error:", err)
       setError("Failed to upload document. Please try again.")
     } finally {
       setUploading(false)
