@@ -139,10 +139,13 @@ export default async function DashboardPage() {
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <Button asChild>
-            <Link href="/my/submit">
+            <Link href="/documents">
               <Plus className="mr-2 h-4 w-4" />
-              New Submission
+              Submit Document
             </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/my/submit">New Competition Entry</Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href="/my/profile">Edit Profile</Link>
