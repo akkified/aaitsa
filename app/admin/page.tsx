@@ -1,42 +1,70 @@
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Users, FileText, Clock, CheckCircle, XCircle, User, LogOut, Shield } from "lucide-react"
+import { FileText, Clock, CheckCircle, XCircle, LogOut, Shield, ArrowLeft } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
-export default async function AdminDashboardPage() {
-  const supabase = await createClient()
+interface Submission {
+  id: string
+  title: string
+  description: string
+  category: string
+  status: "pending" | "approved" | "rejected"
+  submitted_at: string
+  feedback: string | null
+  user_email: string
+}
 
-  const { data, error } = await supabase.auth.getUser()
-  if (error || !data?.user) {
-    redirect("/auth/login")
+export default function AdminDashboardPage() {
+  const [user, setUser] = useState<{ email: string; name: string; isAdmin: boolean } | null>(null)
+  const [submissions, setSubmissions] = useState<Submission[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const isAuthenticated = localStorage.getItem("isAuthenticated")
+      const userData = localStorage.getItem("user")
+
+      if (!isAuthenticated || !userData) {
+        router.push("/auth/login")
+        return
+      }
+
+      const parsedUser = JSON.parse(userData)
+      const isAdmin = parsedUser.email === "akki.akella@gmail.com"
+
+      if (!isAdmin) {
+        router.push("/my")
+        return
+      }
+
+      setUser({
+        email: parsedUser.email,
+        name: parsedUser.name || parsedUser.email.split("@")[0],
+        isAdmin,
+      })
+
+      const savedSubmissions = localStorage.getItem("submissions")
+      if (savedSubmissions) {
+        setSubmissions(JSON.parse(savedSubmissions))
+      }
+
+      setIsLoading(false)
+    }
+
+    checkAuth()
+  }, [router])
+
+  const handleSignOut = () => {
+    localStorage.removeItem("user")
+    localStorage.removeItem("isAuthenticated")
+    router.push("/")
   }
-
-  // Get user profile and check admin access
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
-
-  if (!profile || !["admin", "officer", "teacher"].includes(profile.role)) {
-    redirect("/my")
-  }
-
-  // Get all submissions for review
-  const { data: submissions } = await supabase
-    .from("submissions")
-    .select(`
-      *,
-      profiles!submissions_user_id_fkey(full_name, email, school_year)
-    `)
-    .order("submitted_at", { ascending: false })
-
-  // Get user statistics
-  const { data: userStats } = await supabase.from("profiles").select("role").neq("role", "admin")
-
-  const totalUsers = userStats?.length || 0
-  const students = userStats?.filter((u) => u.role === "student").length || 0
-  const teachers = userStats?.filter((u) => u.role === "teacher").length || 0
-  const officers = userStats?.filter((u) => u.role === "officer").length || 0
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -60,6 +88,21 @@ export default async function AdminDashboardPage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -73,23 +116,25 @@ export default async function AdminDashboardPage() {
                 </div>
                 <span className="font-semibold">TSA Admin</span>
               </Link>
+              <Badge variant="secondary" className="bg-accent text-accent-foreground">
+                Administrator
+              </Badge>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Shield className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground capitalize">{profile?.role}</span>
-                <span className="text-sm text-muted-foreground">•</span>
-                <span className="text-sm text-muted-foreground">{profile?.full_name || data.user.email}</span>
+                <span className="text-sm text-muted-foreground">{user.name}</span>
               </div>
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/my">Student View</Link>
+                <Link href="/my">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Student View
+                </Link>
               </Button>
-              <form action="/auth/signout" method="post">
-                <Button variant="ghost" size="sm" type="submit">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </form>
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>
@@ -109,7 +154,7 @@ export default async function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Submissions</p>
-                  <p className="text-2xl font-bold">{submissions?.length || 0}</p>
+                  <p className="text-2xl font-bold">{submissions.length}</p>
                 </div>
                 <FileText className="h-8 w-8 text-muted-foreground" />
               </div>
@@ -121,7 +166,7 @@ export default async function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
-                  <p className="text-2xl font-bold">{submissions?.filter((s) => s.status === "pending").length || 0}</p>
+                  <p className="text-2xl font-bold">{submissions.filter((s) => s.status === "pending").length}</p>
                 </div>
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
@@ -132,10 +177,10 @@ export default async function AdminDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Members</p>
-                  <p className="text-2xl font-bold">{totalUsers}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Approved</p>
+                  <p className="text-2xl font-bold">{submissions.filter((s) => s.status === "approved").length}</p>
                 </div>
-                <Users className="h-8 w-8 text-muted-foreground" />
+                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
@@ -144,10 +189,10 @@ export default async function AdminDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Students</p>
-                  <p className="text-2xl font-bold">{students}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Rejected</p>
+                  <p className="text-2xl font-bold">{submissions.filter((s) => s.status === "rejected").length}</p>
                 </div>
-                <User className="h-8 w-8 text-muted-foreground" />
+                <XCircle className="h-8 w-8 text-red-600" />
               </div>
             </CardContent>
           </Card>
@@ -156,10 +201,10 @@ export default async function AdminDashboardPage() {
         {/* Quick Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <Button asChild>
-            <Link href="/admin/users">Manage Users</Link>
+            <Link href="/admin/documents">Review All Submissions</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/admin/submissions">Review Submissions</Link>
+            <Link href="/my">Switch to Student View</Link>
           </Button>
         </div>
 
@@ -170,7 +215,7 @@ export default async function AdminDashboardPage() {
             <CardDescription>Latest project submissions requiring review</CardDescription>
           </CardHeader>
           <CardContent>
-            {submissions && submissions.length > 0 ? (
+            {submissions.length > 0 ? (
               <div className="space-y-4">
                 {submissions.slice(0, 10).map((submission) => (
                   <div
@@ -189,7 +234,7 @@ export default async function AdminDashboardPage() {
                       </div>
                       <p className="text-sm text-muted-foreground mb-1">{submission.description}</p>
                       <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                        <span>Student: {submission.profiles?.full_name || "Unknown"}</span>
+                        <span>Student: {submission.user_email}</span>
                         <span>Category: {submission.category}</span>
                         <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
                       </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload, FileText, AlertCircle } from "lucide-react"
+import { Upload, FileText, AlertCircle, ArrowLeft } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import Link from "next/link"
 
 export default function DocumentSubmission() {
   const [title, setTitle] = useState("")
@@ -20,8 +21,25 @@ export default function DocumentSubmission() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
   const [dragActive, setDragActive] = useState(false)
+  const [user, setUser] = useState<{ email: string } | null>(null)
 
   const router = useRouter()
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const isAuthenticated = localStorage.getItem("isAuthenticated")
+      const userData = localStorage.getItem("user")
+
+      if (!isAuthenticated || !userData) {
+        router.push("/auth/login")
+        return
+      }
+
+      setUser(JSON.parse(userData))
+    }
+
+    checkAuth()
+  }, [router])
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -58,6 +76,11 @@ export default function DocumentSubmission() {
       return
     }
 
+    if (!user) {
+      setError("You must be logged in to submit documents.")
+      return
+    }
+
     // Check file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       setError("File size must be less than 10MB.")
@@ -72,7 +95,6 @@ export default function DocumentSubmission() {
       // Simulate upload delay
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      // Store submission data in localStorage for demo
       const submissions = JSON.parse(localStorage.getItem("submissions") || "[]")
       const newSubmission = {
         id: Date.now().toString(),
@@ -82,7 +104,9 @@ export default function DocumentSubmission() {
         fileName: file.name,
         fileSize: file.size,
         status: "pending",
-        submittedAt: new Date().toISOString(),
+        submitted_at: new Date().toISOString(),
+        user_email: user.email,
+        feedback: null,
       }
       submissions.push(newSubmission)
       localStorage.setItem("submissions", JSON.stringify(submissions))
@@ -107,9 +131,30 @@ export default function DocumentSubmission() {
     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
       <div className="max-w-2xl mx-auto">
+        <div className="mb-6">
+          <Link
+            href="/my"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Dashboard
+          </Link>
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Submit Document</h1>
           <p className="text-gray-600">Upload your TSA competition entries, project proposals, and other documents</p>
@@ -150,10 +195,14 @@ export default function DocumentSubmission() {
                     <SelectValue placeholder="Select document category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="competition">Competition Entry</SelectItem>
-                    <SelectItem value="project">Project Proposal</SelectItem>
-                    <SelectItem value="report">Report</SelectItem>
-                    <SelectItem value="presentation">Presentation</SelectItem>
+                    <SelectItem value="Biotechnology Design">Biotechnology Design</SelectItem>
+                    <SelectItem value="Engineering Design">Engineering Design</SelectItem>
+                    <SelectItem value="Architectural Design">Architectural Design</SelectItem>
+                    <SelectItem value="Computer Science">Computer Science</SelectItem>
+                    <SelectItem value="Digital Photography">Digital Photography</SelectItem>
+                    <SelectItem value="Fashion Design">Fashion Design</SelectItem>
+                    <SelectItem value="Forensic Science">Forensic Science</SelectItem>
+                    <SelectItem value="Game Design">Game Design</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>

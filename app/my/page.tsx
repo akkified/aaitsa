@@ -1,35 +1,95 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, FileText, Clock, CheckCircle, XCircle, User, LogOut } from "lucide-react"
+import { Plus, FileText, Clock, CheckCircle, XCircle, LogOut, Settings } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+
+interface Submission {
+  id: string
+  title: string
+  description: string
+  category: string
+  status: "pending" | "approved" | "rejected"
+  submitted_at: string
+  feedback: string | null
+  user_email: string
+}
 
 export default function DashboardPage() {
-  const mockUser = {
-    email: "student@example.com",
-    name: "John Doe",
-  }
+  const [user, setUser] = useState<{ email: string; name: string; isAdmin: boolean } | null>(null)
+  const [submissions, setSubmissions] = useState<Submission[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
-  const mockSubmissions = [
-    {
-      id: "1",
-      title: "Biotechnology Design Portfolio",
-      description: "Complete portfolio showcasing biotechnology innovation project",
-      category: "Biotechnology Design",
-      status: "pending",
-      submitted_at: "2024-01-15T10:00:00Z",
-      feedback: null,
-    },
-    {
-      id: "2",
-      title: "Engineering Design Process Documentation",
-      description: "Step-by-step documentation of engineering design methodology",
-      category: "Engineering Design",
-      status: "approved",
-      submitted_at: "2024-01-10T14:30:00Z",
-      feedback: "Excellent work! Great attention to detail in the design process.",
-    },
-  ]
+  useEffect(() => {
+    const checkAuth = () => {
+      const isAuthenticated = localStorage.getItem("isAuthenticated")
+      const userData = localStorage.getItem("user")
+
+      if (!isAuthenticated || !userData) {
+        router.push("/auth/login")
+        return
+      }
+
+      const parsedUser = JSON.parse(userData)
+      const isAdmin = parsedUser.email === "akki.akella@gmail.com"
+
+      setUser({
+        email: parsedUser.email,
+        name: parsedUser.name || parsedUser.email.split("@")[0],
+        isAdmin,
+      })
+
+      const savedSubmissions = localStorage.getItem("submissions")
+      if (savedSubmissions) {
+        const allSubmissions = JSON.parse(savedSubmissions)
+        // Filter submissions for current user (unless admin)
+        const userSubmissions = isAdmin
+          ? allSubmissions
+          : allSubmissions.filter((s: Submission) => s.user_email === parsedUser.email)
+        setSubmissions(userSubmissions)
+      } else {
+        const demoSubmissions = [
+          {
+            id: "1",
+            title: "Biotechnology Design Portfolio",
+            description: "Complete portfolio showcasing biotechnology innovation project",
+            category: "Biotechnology Design",
+            status: "pending" as const,
+            submitted_at: "2024-01-15T10:00:00Z",
+            feedback: null,
+            user_email: parsedUser.email,
+          },
+          {
+            id: "2",
+            title: "Engineering Design Process Documentation",
+            description: "Step-by-step documentation of engineering design methodology",
+            category: "Engineering Design",
+            status: "approved" as const,
+            submitted_at: "2024-01-10T14:30:00Z",
+            feedback: "Excellent work! Great attention to detail in the design process.",
+            user_email: parsedUser.email,
+          },
+        ]
+        localStorage.setItem("submissions", JSON.stringify(demoSubmissions))
+        setSubmissions(demoSubmissions)
+      }
+
+      setIsLoading(false)
+    }
+
+    checkAuth()
+  }, [router])
+
+  const handleSignOut = () => {
+    localStorage.removeItem("user")
+    localStorage.removeItem("isAuthenticated")
+    router.push("/")
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -53,6 +113,21 @@ export default function DashboardPage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -66,18 +141,29 @@ export default function DashboardPage() {
                 </div>
                 <span className="font-semibold">TSA Portal</span>
               </Link>
+              {user.isAdmin && (
+                <Badge variant="secondary" className="bg-accent text-accent-foreground">
+                  Admin
+                </Badge>
+              )}
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{mockUser.name}</span>
+                <LogOut className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">{user.name}</span>
               </div>
-              <form action="/api/auth/signout" method="post">
-                <Button variant="ghost" size="sm" type="submit">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
+              {user.isAdmin && (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/admin">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Admin Panel
+                  </Link>
                 </Button>
-              </form>
+              )}
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>
@@ -86,8 +172,14 @@ export default function DashboardPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome, {mockUser.name}!</h1>
-          <p className="text-muted-foreground">Manage your TSA competition submissions and track your progress.</p>
+          <h1 className="text-3xl font-bold mb-2">
+            Welcome, {user.name}!{user.isAdmin && <span className="text-accent ml-2">(Administrator)</span>}
+          </h1>
+          <p className="text-muted-foreground">
+            {user.isAdmin
+              ? "Manage TSA submissions and review student entries."
+              : "Manage your TSA competition submissions and track your progress."}
+          </p>
         </div>
 
         {/* Stats Cards */}
@@ -96,8 +188,10 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Submissions</p>
-                  <p className="text-2xl font-bold">{mockSubmissions.length}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {user.isAdmin ? "Total Submissions" : "Your Submissions"}
+                  </p>
+                  <p className="text-2xl font-bold">{submissions.length}</p>
                 </div>
                 <FileText className="h-8 w-8 text-muted-foreground" />
               </div>
@@ -109,7 +203,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
-                  <p className="text-2xl font-bold">{mockSubmissions.filter((s) => s.status === "pending").length}</p>
+                  <p className="text-2xl font-bold">{submissions.filter((s) => s.status === "pending").length}</p>
                 </div>
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
@@ -121,7 +215,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Approved</p>
-                  <p className="text-2xl font-bold">{mockSubmissions.filter((s) => s.status === "approved").length}</p>
+                  <p className="text-2xl font-bold">{submissions.filter((s) => s.status === "approved").length}</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
@@ -132,10 +226,18 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Grade Level</p>
-                  <p className="text-2xl font-bold">12th</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {user.isAdmin ? "Rejected" : "Grade Level"}
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {user.isAdmin ? submissions.filter((s) => s.status === "rejected").length : "12th"}
+                  </p>
                 </div>
-                <User className="h-8 w-8 text-muted-foreground" />
+                {user.isAdmin ? (
+                  <XCircle className="h-8 w-8 text-red-600" />
+                ) : (
+                  <Settings className="h-8 w-8 text-muted-foreground" />
+                )}
               </div>
             </CardContent>
           </Card>
@@ -143,30 +245,52 @@ export default function DashboardPage() {
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <Button asChild>
-            <Link href="/documents">
-              <Plus className="mr-2 h-4 w-4" />
-              Submit Document
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/documents">New Competition Entry</Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/my/profile">Edit Profile</Link>
-          </Button>
+          {!user.isAdmin && (
+            <Button asChild>
+              <Link href="/documents">
+                <Plus className="mr-2 h-4 w-4" />
+                Submit Document
+              </Link>
+            </Button>
+          )}
+          {user.isAdmin ? (
+            <>
+              <Button asChild>
+                <Link href="/admin">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Admin Dashboard
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/admin/documents">Review Submissions</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" asChild>
+                <Link href="/documents">New Competition Entry</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/my/profile">Edit Profile</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Submissions List */}
         <Card>
           <CardHeader>
-            <CardTitle>Your Submissions</CardTitle>
-            <CardDescription>Track the status of your TSA competition entries</CardDescription>
+            <CardTitle>{user.isAdmin ? "All Submissions" : "Your Submissions"}</CardTitle>
+            <CardDescription>
+              {user.isAdmin
+                ? "Review and manage all TSA competition entries"
+                : "Track the status of your TSA competition entries"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {mockSubmissions.length > 0 ? (
+            {submissions.length > 0 ? (
               <div className="space-y-4">
-                {mockSubmissions.map((submission) => (
+                {submissions.map((submission) => (
                   <div
                     key={submission.id}
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -185,6 +309,7 @@ export default function DashboardPage() {
                       <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                         <span>Category: {submission.category}</span>
                         <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
+                        {user.isAdmin && <span>Student: {submission.user_email}</span>}
                       </div>
                       {submission.feedback && (
                         <div className="mt-2 p-2 bg-muted/50 rounded text-sm">
@@ -194,7 +319,13 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/my/submissions/${submission.id}`}>View</Link>
+                        <Link
+                          href={
+                            user.isAdmin ? `/admin/submissions/${submission.id}` : `/my/submissions/${submission.id}`
+                          }
+                        >
+                          {user.isAdmin ? "Review" : "View"}
+                        </Link>
                       </Button>
                     </div>
                   </div>
@@ -205,14 +336,18 @@ export default function DashboardPage() {
                 <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No submissions yet</h3>
                 <p className="text-muted-foreground mb-4">
-                  Get started by submitting your first TSA competition entry.
+                  {user.isAdmin
+                    ? "No student submissions have been made yet."
+                    : "Get started by submitting your first TSA competition entry."}
                 </p>
-                <Button asChild>
-                  <Link href="/documents">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Your First Submission
-                  </Link>
-                </Button>
+                {!user.isAdmin && (
+                  <Button asChild>
+                    <Link href="/documents">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create Your First Submission
+                    </Link>
+                  </Button>
+                )}
               </div>
             )}
           </CardContent>
