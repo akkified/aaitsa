@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
 export default function SignOutPage() {
@@ -12,20 +11,16 @@ export default function SignOutPage() {
     const signOut = async () => {
       try {
         console.log("[v0] Starting signout process")
-        const supabase = createClient()
-        console.log("[v0] Supabase client created successfully")
 
-        const { error } = await supabase.auth.signOut()
-        console.log("[v0] Signout completed", { error })
-
-        if (error) {
-          console.error("[v0] Error signing out:", error)
-          setError(error.message)
-          router.push("/auth/error")
-        } else {
-          console.log("[v0] Signout successful, redirecting to home")
-          router.push("/")
+        // Clear any stored authentication data
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("user")
+          localStorage.removeItem("isAuthenticated")
+          sessionStorage.clear()
         }
+
+        console.log("[v0] Signout successful, redirecting to home")
+        router.push("/")
       } catch (err) {
         console.error("[v0] Unexpected error during signout:", err)
         setError(err instanceof Error ? err.message : "An unexpected error occurred")
