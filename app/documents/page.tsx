@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload, FileText, AlertCircle, ArrowLeft } from "lucide-react"
+import { Upload, FileText, AlertCircle, ArrowLeft, CheckCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 
@@ -22,6 +22,7 @@ export default function DocumentSubmission() {
   const [error, setError] = useState("")
   const [dragActive, setDragActive] = useState(false)
   const [user, setUser] = useState<{ email: string } | null>(null)
+  const [showSuccess, setShowSuccess] = useState(false)
 
   const router = useRouter()
 
@@ -57,21 +58,47 @@ export default function DocumentSubmission() {
     setDragActive(false)
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setFile(e.dataTransfer.files[0])
+      const droppedFile = e.dataTransfer.files[0]
+      if (validateFileType(droppedFile)) {
+        setFile(droppedFile)
+        setError("")
+      } else {
+        setError("Please select a supported file type (PDF, DOC, DOCX, PPT, PPTX, TXT, JPG, PNG)")
+      }
     }
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0])
+      const selectedFile = e.target.files[0]
+      if (validateFileType(selectedFile)) {
+        setFile(selectedFile)
+        setError("")
+      } else {
+        setError("Please select a supported file type (PDF, DOC, DOCX, PPT, PPTX, TXT, JPG, PNG)")
+      }
     }
+  }
+
+  const validateFileType = (file: File) => {
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "text/plain",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+    ]
+    return allowedTypes.includes(file.type)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] Document submission started")
 
-    if (!title || !file || !category) {
+    if (!title.trim() || !file || !category) {
       setError("Please fill in all required fields and select a file.")
       return
     }
@@ -91,15 +118,14 @@ export default function DocumentSubmission() {
     setError("")
 
     try {
-      console.log("[v0] Processing file upload simulation")
       // Simulate upload delay
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
       const submissions = JSON.parse(localStorage.getItem("submissions") || "[]")
       const newSubmission = {
         id: Date.now().toString(),
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim(),
         category,
         fileName: file.name,
         fileSize: file.size,
@@ -111,12 +137,19 @@ export default function DocumentSubmission() {
       submissions.push(newSubmission)
       localStorage.setItem("submissions", JSON.stringify(submissions))
 
-      console.log("[v0] Document submission successful:", newSubmission)
+      setShowSuccess(true)
 
-      // Redirect to success page
-      router.push("/documents/success")
+      // Reset form
+      setTitle("")
+      setDescription("")
+      setCategory("")
+      setFile(null)
+
+      // Redirect to success page after a brief delay
+      setTimeout(() => {
+        router.push("/documents/success")
+      }, 1500)
     } catch (err) {
-      console.error("[v0] Upload error:", err)
       setError("Failed to upload document. Please try again.")
     } finally {
       setUploading(false)
@@ -138,6 +171,23 @@ export default function DocumentSubmission() {
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (showSuccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4 flex items-center justify-center">
+        <Card className="shadow-lg text-center max-w-md">
+          <CardContent className="pt-6">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-green-800 mb-2">Success!</h2>
+            <p className="text-green-700">Your document has been submitted successfully.</p>
+            <p className="text-sm text-green-600 mt-2">Redirecting to confirmation page...</p>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -265,7 +315,7 @@ export default function DocumentSubmission() {
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={uploading || !title || !file || !category}>
+              <Button type="submit" className="w-full" disabled={uploading || !title.trim() || !file || !category}>
                 {uploading ? "Uploading..." : "Submit Document"}
               </Button>
             </form>
