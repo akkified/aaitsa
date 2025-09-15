@@ -2,85 +2,103 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { FileText, Download, Calendar, Eye } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { FileText, Clock, CheckCircle, XCircle, Eye } from "lucide-react"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/client"
 
-interface Document {
+interface Submission {
   id: string
   title: string
   description: string
+  category: string
+  status: "pending" | "approved" | "rejected"
+  submitted_at: string
+  feedback: string | null
+  user_email: string
   fileName: string
   fileSize: number
-  submittedAt: string
-  status: string
-  category: string
 }
 
 export default function DocumentList() {
-  const [documents, setDocuments] = useState<Document[]>([])
-  const [loading, setLoading] = useState(true)
+  const [submissions, setSubmissions] = useState<Submission[]>([])
+  const [user, setUser] = useState<{ email: string } | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const loadDocuments = () => {
-      try {
-        const storedDocs = localStorage.getItem("submissions")
-        let docs: Document[] = []
+    const loadUserAndSubmissions = async () => {
+      const supabase = createClient()
 
-        if (storedDocs) {
-          docs = JSON.parse(storedDocs)
-        } else {
-          docs = [
-            {
-              id: "demo-1",
-              title: "Robotics Competition Entry - Autonomous Navigation",
-              description:
-                "Our team's entry for the autonomous navigation challenge, featuring advanced sensor integration and machine learning algorithms.",
-              fileName: "robotics-navigation-project.pdf",
-              fileSize: 2456789,
-              submittedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
-              status: "approved",
-              category: "competition",
-            },
-            {
-              id: "demo-2",
-              title: "Software Development Project Proposal",
-              description:
-                "Proposal for developing a mobile app to help students track their TSA competition progress and deadlines.",
-              fileName: "mobile-app-proposal.docx",
-              fileSize: 1234567,
-              submittedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
-              status: "under_review",
-              category: "project",
-            },
-          ]
-          localStorage.setItem("submissions", JSON.stringify(docs))
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser()
+
+        if (error || !user) {
+          setIsLoading(false)
+          return
         }
 
-        setDocuments(docs)
-      } catch (err) {
-        console.error("Error loading documents:", err)
+        setUser({ email: user.email! })
+
+        const loadSubmissions = () => {
+          const savedSubmissions = localStorage.getItem("submissions")
+          if (savedSubmissions) {
+            const allSubmissions = JSON.parse(savedSubmissions)
+            const userSubmissions = allSubmissions.filter((s: Submission) => s.user_email === user.email)
+            setSubmissions(userSubmissions)
+          }
+        }
+
+        loadSubmissions()
+
+        // Listen for localStorage changes
+        const handleStorageChange = (e: StorageEvent) => {
+          if (e.key === "submissions") {
+            loadSubmissions()
+          }
+        }
+
+        window.addEventListener("storage", handleStorageChange)
+
+        // Poll for changes every second
+        const interval = setInterval(loadSubmissions, 1000)
+
+        return () => {
+          window.removeEventListener("storage", handleStorageChange)
+          clearInterval(interval)
+        }
+      } catch (error) {
+        console.error("Error loading user:", error)
       } finally {
-        setLoading(false)
+        setIsLoading(false)
       }
     }
 
-    loadDocuments()
+    loadUserAndSubmissions()
   }, [])
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "approved":
+        return <CheckCircle className="h-4 w-4 text-green-600" />
+      case "rejected":
+        return <XCircle className="h-4 w-4 text-red-600" />
+      default:
+        return <Clock className="h-4 w-4 text-yellow-600" />
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800 border-green-200"
       case "rejected":
-        return "bg-red-100 text-red-800"
-      case "pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "under_review":
-        return "bg-blue-100 text-blue-800"
+        return "bg-red-100 text-red-800 border-red-200"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
     }
   }
 
@@ -92,88 +110,142 @@ export default function DocumentList() {
     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Loading your documents...</p>
+      </div>
+    )
   }
 
-  if (loading) {
+  if (!user) {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your documents...</p>
+          <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Authentication Required</h3>
+          <p className="text-muted-foreground mb-4">Please log in to view your documents.</p>
+          <Button asChild>
+            <Link href="/auth/login">Sign In</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (submissions.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No Documents Yet</h3>
+          <p className="text-muted-foreground mb-4">
+            You haven't submitted any documents yet. Get started by submitting your first TSA competition entry.
+          </p>
+          <Button asChild>
+            <Link href="/documents">Submit Your First Document</Link>
+          </Button>
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          Your Documents
-        </CardTitle>
-        <CardDescription>Documents you've submitted for review</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {documents.length === 0 ? (
-          <div className="text-center py-8">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No documents yet</h3>
-            <p className="text-gray-600 mb-4">Submit your first document to get started.</p>
-            <Button asChild>
-              <Link href="/documents">Submit Document</Link>
-            </Button>
-          </div>
-        ) : (
+    <div className="space-y-4">
+      {/* Summary Stats */}
+      <div className="grid md:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Documents</p>
+                <p className="text-2xl font-bold">{submissions.length}</p>
+              </div>
+              <FileText className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
+                <p className="text-2xl font-bold">{submissions.filter((s) => s.status === "pending").length}</p>
+              </div>
+              <Clock className="h-8 w-8 text-yellow-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Approved</p>
+                <p className="text-2xl font-bold">{submissions.filter((s) => s.status === "approved").length}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Documents List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Submitted Documents</CardTitle>
+          <CardDescription>Track the status of your TSA competition entries</CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-4">
-            {documents.map((document) => (
+            {submissions.map((submission) => (
               <div
-                key={document.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                key={submission.id}
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2">
-                    <FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                    <h3 className="font-semibold truncate">{document.title}</h3>
-                    <Badge className={getStatusColor(document.status)}>{document.status.replace("_", " ")}</Badge>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <h3 className="font-semibold">{submission.title}</h3>
+                    <Badge className={`${getStatusColor(submission.status)} border`}>
+                      <span className="flex items-center space-x-1">
+                        {getStatusIcon(submission.status)}
+                        <span className="capitalize">{submission.status}</span>
+                      </span>
+                    </Badge>
+                    {submission.feedback && submission.status !== "pending" && (
+                      <Badge variant="outline" className="text-blue-600 border-blue-200">
+                        Has Feedback
+                      </Badge>
+                    )}
                   </div>
-
-                  {document.description && (
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{document.description}</p>
+                  <p className="text-sm text-muted-foreground mb-1">{submission.description}</p>
+                  <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                    <span>Category: {submission.category}</span>
+                    <span>File: {submission.fileName}</span>
+                    <span>Size: {formatFileSize(submission.fileSize)}</span>
+                    <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
+                  </div>
+                  {submission.feedback && (
+                    <div className="mt-2 p-2 bg-muted/50 rounded text-sm">
+                      <strong>Feedback:</strong> {submission.feedback}
+                    </div>
                   )}
-
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {formatDate(document.submittedAt)}
-                    </span>
-                    <span>Category: {document.category}</span>
-                    <span>Size: {formatFileSize(document.fileSize)}</span>
-                    <span>File: {document.fileName}</span>
-                  </div>
                 </div>
-
-                <div className="flex items-center gap-2 ml-4">
-                  <Button variant="outline" size="sm" disabled>
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
-                  </Button>
-
-                  <Button variant="outline" size="sm" disabled>
-                    <Download className="h-4 w-4" />
+                <div className="flex items-center space-x-2">
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={`/my/submissions/${submission.id}`}>
+                      <Eye className="h-4 w-4 mr-1" />
+                      View Details
+                    </Link>
                   </Button>
                 </div>
               </div>
             ))}
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

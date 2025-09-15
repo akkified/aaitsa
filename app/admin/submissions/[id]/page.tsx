@@ -1,3 +1,7 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -12,53 +16,68 @@ interface AdminSubmissionPageProps {
   }
 }
 
-export default function AdminSubmissionPage({ params }: AdminSubmissionPageProps) {
-  // Mock submission data based on ID
-  const mockSubmissions: Record<string, any> = {
-    "1": {
-      id: "1",
-      title: "Biotechnology Design Portfolio",
-      description:
-        "Complete portfolio showcasing biotechnology innovation project including research, design process, and final prototype documentation.",
-      category: "Biotechnology Design",
-      status: "pending",
-      submitted_at: "2024-01-15T10:00:00Z",
-      feedback: null,
-      student: {
-        name: "John Doe",
-        email: "john.doe@student.edu",
-        school: "Lincoln High School",
-        grade: "12th",
-      },
-      files: [
-        { name: "biotech-portfolio.pdf", size: "2.4 MB", type: "application/pdf" },
-        { name: "prototype-images.zip", size: "15.7 MB", type: "application/zip" },
-      ],
-    },
-    "2": {
-      id: "2",
-      title: "Engineering Design Process Documentation",
-      description:
-        "Step-by-step documentation of engineering design methodology applied to sustainable energy solutions.",
-      category: "Engineering Design",
-      status: "approved",
-      submitted_at: "2024-01-10T14:30:00Z",
-      feedback:
-        "Excellent work! Great attention to detail in the design process. The sustainable energy focus shows innovative thinking.",
-      student: {
-        name: "Jane Smith",
-        email: "jane.smith@student.edu",
-        school: "Roosevelt High School",
-        grade: "11th",
-      },
-      files: [
-        { name: "engineering-design-doc.pdf", size: "3.1 MB", type: "application/pdf" },
-        { name: "calculations.xlsx", size: "890 KB", type: "application/vnd.ms-excel" },
-      ],
-    },
-  }
+interface Submission {
+  id: string
+  title: string
+  description: string
+  category: string
+  status: "pending" | "approved" | "rejected"
+  submitted_at: string
+  feedback: string | null
+  user_email: string
+  fileName: string
+  fileSize: number
+}
 
-  const submission = mockSubmissions[params.id]
+export default function AdminSubmissionPage({ params }: AdminSubmissionPageProps) {
+  const [submission, setSubmission] = useState<Submission | null>(null)
+  const [feedback, setFeedback] = useState("")
+  const [status, setStatus] = useState("")
+  const [updating, setUpdating] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    const loadSubmission = () => {
+      const savedSubmissions = localStorage.getItem("submissions")
+      if (savedSubmissions) {
+        const submissions = JSON.parse(savedSubmissions)
+        const foundSubmission = submissions.find((s: Submission) => s.id === params.id)
+        if (foundSubmission) {
+          setSubmission(foundSubmission)
+          setFeedback(foundSubmission.feedback || "")
+          setStatus(foundSubmission.status)
+        }
+      }
+    }
+
+    loadSubmission()
+  }, [params.id])
+
+  const handleStatusUpdate = async () => {
+    if (!submission) return
+
+    setUpdating(true)
+    try {
+      const savedSubmissions = localStorage.getItem("submissions")
+      if (savedSubmissions) {
+        const submissions = JSON.parse(savedSubmissions)
+        const updatedSubmissions = submissions.map((s: Submission) =>
+          s.id === submission.id ? { ...s, status, feedback } : s,
+        )
+        localStorage.setItem("submissions", JSON.stringify(updatedSubmissions))
+
+        // Update local state
+        setSubmission({ ...submission, status: status as any, feedback })
+
+        // Redirect back to admin dashboard
+        router.push("/admin")
+      }
+    } catch (error) {
+      console.error("Error updating submission:", error)
+    } finally {
+      setUpdating(false)
+    }
+  }
 
   if (!submission) {
     return (
@@ -86,6 +105,14 @@ export default function AdminSubmissionPage({ params }: AdminSubmissionPageProps
       default:
         return "bg-yellow-100 text-yellow-800 border-yellow-200"
     }
+  }
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes"
+    const k = 1024
+    const sizes = ["Bytes", "KB", "MB", "GB"]
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
 
   return (
@@ -147,21 +174,19 @@ export default function AdminSubmissionPage({ params }: AdminSubmissionPageProps
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {submission.files.map((file: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-8 w-8 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">{file.name}</p>
-                          <p className="text-sm text-muted-foreground">{file.size}</p>
-                        </div>
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <FileText className="h-8 w-8 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{submission.fileName}</p>
+                        <p className="text-sm text-muted-foreground">{formatFileSize(submission.fileSize)}</p>
                       </div>
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </Button>
                     </div>
-                  ))}
+                    <Button variant="outline" size="sm" disabled>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -179,20 +204,12 @@ export default function AdminSubmissionPage({ params }: AdminSubmissionPageProps
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <span className="font-medium text-muted-foreground">Name:</span>
-                  <p>{submission.student.name}</p>
-                </div>
-                <div>
                   <span className="font-medium text-muted-foreground">Email:</span>
-                  <p className="text-sm">{submission.student.email}</p>
+                  <p className="text-sm">{submission.user_email}</p>
                 </div>
                 <div>
-                  <span className="font-medium text-muted-foreground">School:</span>
-                  <p>{submission.student.school}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-muted-foreground">Grade:</span>
-                  <p>{submission.student.grade}</p>
+                  <span className="font-medium text-muted-foreground">Student Name:</span>
+                  <p>{submission.user_email.split("@")[0]}</p>
                 </div>
               </CardContent>
             </Card>
@@ -208,7 +225,7 @@ export default function AdminSubmissionPage({ params }: AdminSubmissionPageProps
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Status</label>
-                  <Select defaultValue={submission.status}>
+                  <Select value={status} onValueChange={setStatus}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -224,19 +241,40 @@ export default function AdminSubmissionPage({ params }: AdminSubmissionPageProps
                   <label className="text-sm font-medium">Feedback</label>
                   <Textarea
                     placeholder="Provide feedback for the student..."
-                    defaultValue={submission.feedback || ""}
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
                     rows={4}
                   />
                 </div>
 
                 <div className="flex space-x-2">
-                  <Button className="flex-1">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Approve
+                  <Button className="flex-1" onClick={handleStatusUpdate} disabled={updating}>
+                    {updating ? "Updating..." : "Update Review"}
                   </Button>
-                  <Button variant="destructive" className="flex-1">
+                </div>
+
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-green-600 hover:text-green-700 bg-transparent"
+                    onClick={() => {
+                      setStatus("approved")
+                      setFeedback("Document approved - excellent work!")
+                    }}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Quick Approve
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-red-600 hover:text-red-700 bg-transparent"
+                    onClick={() => {
+                      setStatus("rejected")
+                      setFeedback("Please revise and resubmit with improvements.")
+                    }}
+                  >
                     <XCircle className="h-4 w-4 mr-2" />
-                    Reject
+                    Quick Reject
                   </Button>
                 </div>
               </CardContent>

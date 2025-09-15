@@ -50,38 +50,57 @@ export default function DashboardPage() {
           isAdmin,
         })
 
-        const savedSubmissions = localStorage.getItem("submissions")
-        if (savedSubmissions) {
-          const allSubmissions = JSON.parse(savedSubmissions)
-          const userSubmissions = isAdmin
-            ? allSubmissions
-            : allSubmissions.filter((s: Submission) => s.user_email === user.email)
-          setSubmissions(userSubmissions)
-        } else {
-          const demoSubmissions = [
-            {
-              id: "1",
-              title: "Biotechnology Design Portfolio",
-              description: "Complete portfolio showcasing biotechnology innovation project",
-              category: "Biotechnology Design",
-              status: "pending" as const,
-              submitted_at: "2024-01-15T10:00:00Z",
-              feedback: null,
-              user_email: user.email!,
-            },
-            {
-              id: "2",
-              title: "Engineering Design Process Documentation",
-              description: "Step-by-step documentation of engineering design methodology",
-              category: "Engineering Design",
-              status: "approved" as const,
-              submitted_at: "2024-01-10T14:30:00Z",
-              feedback: "Excellent work! Great attention to detail in the design process.",
-              user_email: user.email!,
-            },
-          ]
-          localStorage.setItem("submissions", JSON.stringify(demoSubmissions))
-          setSubmissions(demoSubmissions)
+        const loadSubmissions = () => {
+          const savedSubmissions = localStorage.getItem("submissions")
+          if (savedSubmissions) {
+            const allSubmissions = JSON.parse(savedSubmissions)
+            const userSubmissions = isAdmin
+              ? allSubmissions
+              : allSubmissions.filter((s: Submission) => s.user_email === user.email)
+            setSubmissions(userSubmissions)
+          } else {
+            const demoSubmissions = [
+              {
+                id: "1",
+                title: "Biotechnology Design Portfolio",
+                description: "Complete portfolio showcasing biotechnology innovation project",
+                category: "Biotechnology Design",
+                status: "pending" as const,
+                submitted_at: "2024-01-15T10:00:00Z",
+                feedback: null,
+                user_email: user.email!,
+              },
+              {
+                id: "2",
+                title: "Engineering Design Process Documentation",
+                description: "Step-by-step documentation of engineering design methodology",
+                category: "Engineering Design",
+                status: "approved" as const,
+                submitted_at: "2024-01-10T14:30:00Z",
+                feedback: "Excellent work! Great attention to detail in the design process.",
+                user_email: user.email!,
+              },
+            ]
+            localStorage.setItem("submissions", JSON.stringify(demoSubmissions))
+            setSubmissions(demoSubmissions)
+          }
+        }
+
+        loadSubmissions()
+
+        const handleStorageChange = (e: StorageEvent) => {
+          if (e.key === "submissions") {
+            loadSubmissions()
+          }
+        }
+
+        window.addEventListener("storage", handleStorageChange)
+
+        const interval = setInterval(loadSubmissions, 1000)
+
+        return () => {
+          window.removeEventListener("storage", handleStorageChange)
+          clearInterval(interval)
         }
       } catch (error) {
         console.error("Auth error:", error)
@@ -313,6 +332,11 @@ export default function DashboardPage() {
                             <span className="capitalize">{submission.status}</span>
                           </span>
                         </Badge>
+                        {submission.feedback && submission.status !== "pending" && (
+                          <Badge variant="outline" className="text-blue-600 border-blue-200">
+                            New Feedback
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-sm text-muted-foreground mb-1">{submission.description}</p>
                       <div className="flex items-center space-x-4 text-xs text-muted-foreground">

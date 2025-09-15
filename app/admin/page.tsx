@@ -56,9 +56,28 @@ export default function AdminDashboardPage() {
           isAdmin,
         })
 
-        const savedSubmissions = localStorage.getItem("submissions")
-        if (savedSubmissions) {
-          setSubmissions(JSON.parse(savedSubmissions))
+        const loadSubmissions = () => {
+          const savedSubmissions = localStorage.getItem("submissions")
+          if (savedSubmissions) {
+            setSubmissions(JSON.parse(savedSubmissions))
+          }
+        }
+
+        loadSubmissions()
+
+        const handleStorageChange = (e: StorageEvent) => {
+          if (e.key === "submissions") {
+            loadSubmissions()
+          }
+        }
+
+        window.addEventListener("storage", handleStorageChange)
+
+        const interval = setInterval(loadSubmissions, 1000)
+
+        return () => {
+          window.removeEventListener("storage", handleStorageChange)
+          clearInterval(interval)
         }
       } catch (error) {
         console.error("Auth error:", error)
@@ -96,6 +115,20 @@ export default function AdminDashboardPage() {
         return "bg-red-100 text-red-800 border-red-200"
       default:
         return "bg-yellow-100 text-yellow-800 border-yellow-200"
+    }
+  }
+
+  const updateSubmissionStatus = (submissionId: string, newStatus: string, feedback?: string) => {
+    const savedSubmissions = localStorage.getItem("submissions")
+    if (savedSubmissions) {
+      const submissions = JSON.parse(savedSubmissions)
+      const updatedSubmissions = submissions.map((submission: Submission) =>
+        submission.id === submissionId
+          ? { ...submission, status: newStatus, feedback: feedback || submission.feedback }
+          : submission,
+      )
+      localStorage.setItem("submissions", JSON.stringify(updatedSubmissions))
+      setSubmissions(updatedSubmissions)
     }
   }
 
@@ -251,6 +284,32 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
+                      {submission.status === "pending" && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              updateSubmissionStatus(submission.id, "approved", "Document approved - great work!")
+                            }
+                            className="text-green-600 hover:text-green-700"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              updateSubmissionStatus(submission.id, "rejected", "Please revise and resubmit.")
+                            }
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
+                        </>
+                      )}
                       <Button variant="ghost" size="sm" asChild>
                         <Link href={`/admin/submissions/${submission.id}`}>Review</Link>
                       </Button>
