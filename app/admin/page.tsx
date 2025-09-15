@@ -7,6 +7,7 @@ import Link from "next/link"
 import { FileText, Clock, CheckCircle, XCircle, LogOut, Shield, ArrowLeft } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 
 interface Submission {
   id: string
@@ -26,43 +27,53 @@ export default function AdminDashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const checkAuth = () => {
-      const isAuthenticated = localStorage.getItem("isAuthenticated")
-      const userData = localStorage.getItem("user")
+    const checkAuth = async () => {
+      const supabase = createClient()
 
-      if (!isAuthenticated || !userData) {
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser()
+
+        if (error || !user) {
+          router.push("/auth/login")
+          return
+        }
+
+        const isAdmin = user.email === "akki.akella@gmail.com"
+
+        if (!isAdmin) {
+          router.push("/my")
+          return
+        }
+
+        const userName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Admin"
+
+        setUser({
+          email: user.email!,
+          name: userName,
+          isAdmin,
+        })
+
+        const savedSubmissions = localStorage.getItem("submissions")
+        if (savedSubmissions) {
+          setSubmissions(JSON.parse(savedSubmissions))
+        }
+      } catch (error) {
+        console.error("Auth error:", error)
         router.push("/auth/login")
-        return
+      } finally {
+        setIsLoading(false)
       }
-
-      const parsedUser = JSON.parse(userData)
-      const isAdmin = parsedUser.email === "akki.akella@gmail.com"
-
-      if (!isAdmin) {
-        router.push("/my")
-        return
-      }
-
-      setUser({
-        email: parsedUser.email,
-        name: parsedUser.name || parsedUser.email.split("@")[0],
-        isAdmin,
-      })
-
-      const savedSubmissions = localStorage.getItem("submissions")
-      if (savedSubmissions) {
-        setSubmissions(JSON.parse(savedSubmissions))
-      }
-
-      setIsLoading(false)
     }
 
     checkAuth()
   }, [router])
 
-  const handleSignOut = () => {
-    localStorage.removeItem("user")
-    localStorage.removeItem("isAuthenticated")
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
     router.push("/")
   }
 

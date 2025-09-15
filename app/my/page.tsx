@@ -7,6 +7,7 @@ import Link from "next/link"
 import { Plus, FileText, Clock, CheckCircle, XCircle, LogOut, Settings } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 
 interface Submission {
   id: string
@@ -26,68 +27,76 @@ export default function DashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const checkAuth = () => {
-      const isAuthenticated = localStorage.getItem("isAuthenticated")
-      const userData = localStorage.getItem("user")
+    const checkAuth = async () => {
+      const supabase = createClient()
 
-      if (!isAuthenticated || !userData) {
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser()
+
+        if (error || !user) {
+          router.push("/auth/login")
+          return
+        }
+
+        const isAdmin = user.email === "akki.akella@gmail.com"
+        const userName = user.user_metadata?.full_name || user.email?.split("@")[0] || "User"
+
+        setUser({
+          email: user.email!,
+          name: userName,
+          isAdmin,
+        })
+
+        const savedSubmissions = localStorage.getItem("submissions")
+        if (savedSubmissions) {
+          const allSubmissions = JSON.parse(savedSubmissions)
+          const userSubmissions = isAdmin
+            ? allSubmissions
+            : allSubmissions.filter((s: Submission) => s.user_email === user.email)
+          setSubmissions(userSubmissions)
+        } else {
+          const demoSubmissions = [
+            {
+              id: "1",
+              title: "Biotechnology Design Portfolio",
+              description: "Complete portfolio showcasing biotechnology innovation project",
+              category: "Biotechnology Design",
+              status: "pending" as const,
+              submitted_at: "2024-01-15T10:00:00Z",
+              feedback: null,
+              user_email: user.email!,
+            },
+            {
+              id: "2",
+              title: "Engineering Design Process Documentation",
+              description: "Step-by-step documentation of engineering design methodology",
+              category: "Engineering Design",
+              status: "approved" as const,
+              submitted_at: "2024-01-10T14:30:00Z",
+              feedback: "Excellent work! Great attention to detail in the design process.",
+              user_email: user.email!,
+            },
+          ]
+          localStorage.setItem("submissions", JSON.stringify(demoSubmissions))
+          setSubmissions(demoSubmissions)
+        }
+      } catch (error) {
+        console.error("Auth error:", error)
         router.push("/auth/login")
-        return
+      } finally {
+        setIsLoading(false)
       }
-
-      const parsedUser = JSON.parse(userData)
-      const isAdmin = parsedUser.email === "akki.akella@gmail.com"
-
-      setUser({
-        email: parsedUser.email,
-        name: parsedUser.name || parsedUser.email.split("@")[0],
-        isAdmin,
-      })
-
-      const savedSubmissions = localStorage.getItem("submissions")
-      if (savedSubmissions) {
-        const allSubmissions = JSON.parse(savedSubmissions)
-        // Filter submissions for current user (unless admin)
-        const userSubmissions = isAdmin
-          ? allSubmissions
-          : allSubmissions.filter((s: Submission) => s.user_email === parsedUser.email)
-        setSubmissions(userSubmissions)
-      } else {
-        const demoSubmissions = [
-          {
-            id: "1",
-            title: "Biotechnology Design Portfolio",
-            description: "Complete portfolio showcasing biotechnology innovation project",
-            category: "Biotechnology Design",
-            status: "pending" as const,
-            submitted_at: "2024-01-15T10:00:00Z",
-            feedback: null,
-            user_email: parsedUser.email,
-          },
-          {
-            id: "2",
-            title: "Engineering Design Process Documentation",
-            description: "Step-by-step documentation of engineering design methodology",
-            category: "Engineering Design",
-            status: "approved" as const,
-            submitted_at: "2024-01-10T14:30:00Z",
-            feedback: "Excellent work! Great attention to detail in the design process.",
-            user_email: parsedUser.email,
-          },
-        ]
-        localStorage.setItem("submissions", JSON.stringify(demoSubmissions))
-        setSubmissions(demoSubmissions)
-      }
-
-      setIsLoading(false)
     }
 
     checkAuth()
   }, [router])
 
-  const handleSignOut = () => {
-    localStorage.removeItem("user")
-    localStorage.removeItem("isAuthenticated")
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
     router.push("/")
   }
 
