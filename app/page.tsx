@@ -18,7 +18,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4">
           <nav className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
                 <img src="logo.png" alt="" />
               </div>
               <div>
@@ -365,7 +365,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
                 <img src="logo.png" alt="" />
               </div>
                 <span className="font-semibold">Alliance Academy TSA</span>
