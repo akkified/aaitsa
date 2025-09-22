@@ -164,10 +164,10 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold">TSA</span>
-                </div>
-                <span className="font-semibold">TSA Portal</span>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                <img src="logo.png" alt="" />
+              </div>
+                <span className="font-semibold">Admin Portal</span>
               </Link>
               {user.isAdmin && (
                 <Badge variant="secondary" className="bg-accent text-accent-foreground">
