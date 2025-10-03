@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "v0 App",
+  title: "AAI TSA",
   description: "Created with v0",
   generator: "v0.app",
 }

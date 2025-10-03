@@ -1,14 +1,8 @@
-"use client";
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Calendar, Users, BookOpen, ArrowRight, Star, Target, Lightbulb } from "lucide-react"
-import CountUp from '@/components/CountUp'
-import RotatingText from '@/components/RotatingText'
-import TextType from '@/components/TextType';
-
-
 
 export default function HomePage() {
   return (
@@ -18,12 +12,12 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4">
           <nav className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-                <img src="logo.png" alt="" />
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-lg">AA</span>
               </div>
               <div>
                 <h1 className="font-bold text-xl text-foreground">Alliance Academy</h1>
-                <p className="text-sm text-muted-foreground">Technology Student Association</p>
+                <p className="text-sm text-muted-foreground">Innovation Technology TSA</p>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-6">
@@ -54,28 +48,12 @@ export default function HomePage() {
             Technology Student Association
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold text-balance mb-6">
-            Innovating the Future With 
-            <RotatingText
-              texts={['Collaboration', 'Education', 'Coding', 'Engineering', 'Design']}
-              mainClassName="text-primary px-2 sm:px-2 md:px-3 py-0.5 sm:py-1 md:py-2 justify-center rounded-lg"
-              staggerFrom={"last"}
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "-120%" }}
-              staggerDuration={0.025}
-              splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
-              transition={{ type: "spring", damping: 30, stiffness: 400 }}
-              rotationInterval={3000}
-            />
+            Innovating the Future Through <span className="text-primary">Technology</span>
           </h1>
-          <TextType
-            className="text-xl text-muted-foreground text-balance mb-8 max-w-2xl mx-auto" 
-            text={["Join Alliance Academy's TSA chapter where students explore STEM careers, compete in technology competitions,and develop leadership skills for tomorrows challenges"]}
-            typingSpeed={50}
-            pauseDuration={1500}
-            showCursor={true}
-            cursorCharacter="|"
-          />
+          <p className="text-xl text-muted-foreground text-balance mb-8 max-w-2xl mx-auto">
+            Join Alliance Academy's TSA chapter where students explore STEM careers, compete in technology competitions,
+            and develop leadership skills for tomorrow's challenges.
+          </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild>
               <Link href="/my">
@@ -94,55 +72,19 @@ export default function HomePage() {
         <div className="container mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-3xl font-bold text-primary mb-2">
-                <CountUp
-                  from={0}
-                  to={150}
-                  separator=","
-                  direction="up"
-                  duration={0.75}
-                  className="count-up-text"
-                />
-              +</div>
+              <div className="text-3xl font-bold text-primary mb-2">150+</div>
               <div className="text-muted-foreground">Active Members</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary mb-2">
-                <CountUp
-                  from={0}
-                  to={25}
-                  separator=","
-                  direction="up"
-                  duration={0.75}
-                  className="count-up-text"
-                />
-              +</div>
+              <div className="text-3xl font-bold text-primary mb-2">25+</div>
               <div className="text-muted-foreground">Competitions</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary mb-2">
-                <CountUp
-                  from={0}
-                  to={20}
-                  separator=","
-                  direction="up"
-                  duration={0.75}
-                  className="count-up-text"
-                />
-              +</div>
+              <div className="text-3xl font-bold text-primary mb-2">12</div>
               <div className="text-muted-foreground">State Awards</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary mb-2">
-                <CountUp
-                  from={0}
-                  to={5}
-                  separator=","
-                  direction="up"
-                  duration={0.75}
-                  className="count-up-text"
-                />
-              +</div>
+              <div className="text-3xl font-bold text-primary mb-2">5</div>
               <div className="text-muted-foreground">National Qualifiers</div>
             </div>
           </div>
@@ -336,20 +278,18 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div>
               <h3 className="font-semibold mb-2">Faculty Advisor</h3>
-              <p className="text-muted-foreground">Dr. Fagan</p>
-              <p className="text-sm text-muted-foreground">f39844@forsythk12.org</p>
+              <p className="text-muted-foreground">Ms. Johnson</p>
+              <p className="text-sm text-muted-foreground">tjohnson@allianceacademy.edu</p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Chapter President</h3>
-              <p className="text-muted-foreground">Sean Track</p>
-              <p className="text-sm text-muted-foreground">115787@forsythk12.org
-              </p>
+              <p className="text-muted-foreground">Alex Chen</p>
+              <p className="text-sm text-muted-foreground">president@allianceacademy.edu</p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Chapter Vice President</h3>
-              <p className="text-muted-foreground">Shreyas Yeldandi</p>
-              <p className="text-sm text-muted-foreground">154566@forsythk12.org
-              </p>
+              <h3 className="font-semibold mb-2">Meeting Location</h3>
+              <p className="text-muted-foreground">Room 204, STEM Building</p>
+              <p className="text-sm text-muted-foreground">Fridays, 3:30-4:30 PM</p>
             </div>
           </div>
 
@@ -365,9 +305,9 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-                <img src="logo.png" alt="" />
-              </div>
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold">AA</span>
+                </div>
                 <span className="font-semibold">Alliance Academy TSA</span>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -405,12 +345,12 @@ export default function HomePage() {
               <h4 className="font-semibold mb-4">Resources</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <a href="https://tsaweb.org/" className="hover:text-primary">
+                  <a href="#" className="hover:text-primary">
                     TSA National
                   </a>
                 </li>
                 <li>
-                  <a href="https://tsaweb.org/competitions#highschool" className="hover:text-primary">
+                  <a href="#" className="hover:text-primary">
                     Competition Rules
                   </a>
                 </li>
@@ -431,15 +371,15 @@ export default function HomePage() {
               <h4 className="font-semibold mb-4">Contact</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>Alliance Academy</li>
-                <li>11100 Lanier 400 Parkway</li>
-                <li>Cumming, Georgia 30040</li>
-                <li>470-695-7823</li>
+                <li>123 Innovation Drive</li>
+                <li>Tech City, TC 12345</li>
+                <li>info@allianceacademy.edu</li>
               </ul>
             </div>
           </div>
 
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2025 Alliance Academy TSA Chapter. All rights reserved.</p>
+            <p>&copy; 2024 Alliance Academy TSA Chapter. All rights reserved.</p>
           </div>
         </div>
       </footer>

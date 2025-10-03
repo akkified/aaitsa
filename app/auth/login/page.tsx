@@ -26,13 +26,14 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: {
+          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/my`,
+        },
       })
-
       if (error) throw error
-
       router.push("/my")
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")

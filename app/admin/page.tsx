@@ -1,100 +1,42 @@
-"use client"
-
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { FileText, Clock, CheckCircle, XCircle, LogOut, Shield, ArrowLeft } from "lucide-react"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { Users, FileText, Clock, CheckCircle, XCircle, User, LogOut, Shield } from "lucide-react"
 
-interface Submission {
-  id: string
-  title: string
-  description: string
-  category: string
-  status: "pending" | "approved" | "rejected"
-  submitted_at: string
-  feedback: string | null
-  user_email: string
-}
+export default async function AdminDashboardPage() {
+  const supabase = await createClient()
 
-export default function AdminDashboardPage() {
-  const [user, setUser] = useState<{ email: string; name: string; isAdmin: boolean } | null>(null)
-  const [submissions, setSubmissions] = useState<Submission[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = createClient()
-
-      try {
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser()
-
-        if (error || !user) {
-          router.push("/auth/login")
-          return
-        }
-
-        const isAdmin = user.email === "akki.akella@gmail.com"
-
-        if (!isAdmin) {
-          router.push("/my")
-          return
-        }
-
-        const userName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Admin"
-
-        setUser({
-          email: user.email!,
-          name: userName,
-          isAdmin,
-        })
-
-        const loadSubmissions = () => {
-          const savedSubmissions = localStorage.getItem("submissions")
-          if (savedSubmissions) {
-            setSubmissions(JSON.parse(savedSubmissions))
-          }
-        }
-
-        loadSubmissions()
-
-        const handleStorageChange = (e: StorageEvent) => {
-          if (e.key === "submissions") {
-            loadSubmissions()
-          }
-        }
-
-        window.addEventListener("storage", handleStorageChange)
-
-        const interval = setInterval(loadSubmissions, 1000)
-
-        return () => {
-          window.removeEventListener("storage", handleStorageChange)
-          clearInterval(interval)
-        }
-      } catch (error) {
-        console.error("Auth error:", error)
-        router.push("/auth/login")
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    checkAuth()
-  }, [router])
-
-  const handleSignOut = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/")
+  const { data, error } = await supabase.auth.getUser()
+  if (error || !data?.user) {
+    redirect("/auth/login")
   }
+
+  // Get user profile and check admin access
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
+
+  if (!profile || !["admin", "officer", "teacher"].includes(profile.role)) {
+    redirect("/my")
+  }
+
+  // Get all submissions for review
+  const { data: submissions } = await supabase
+    .from("submissions")
+    .select(`
+      *,
+      profiles!submissions_user_id_fkey(full_name, email, school_year)
+    `)
+    .order("submitted_at", { ascending: false })
+
+  // Get user statistics
+  const { data: userStats } = await supabase.from("profiles").select("role").neq("role", "admin")
+
+  const totalUsers = userStats?.length || 0
+  const students = userStats?.filter((u) => u.role === "student").length || 0
+  const teachers = userStats?.filter((u) => u.role === "teacher").length || 0
+  const officers = userStats?.filter((u) => u.role === "officer").length || 0
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -118,35 +60,6 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const updateSubmissionStatus = (submissionId: string, newStatus: string, feedback?: string) => {
-    const savedSubmissions = localStorage.getItem("submissions")
-    if (savedSubmissions) {
-      const submissions = JSON.parse(savedSubmissions)
-      const updatedSubmissions = submissions.map((submission: Submission) =>
-        submission.id === submissionId
-          ? { ...submission, status: newStatus, feedback: feedback || submission.feedback }
-          : submission,
-      )
-      localStorage.setItem("submissions", JSON.stringify(updatedSubmissions))
-      setSubmissions(updatedSubmissions)
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
-  }
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -160,25 +73,23 @@ export default function AdminDashboardPage() {
                 </div>
                 <span className="font-semibold">TSA Admin</span>
               </Link>
-              <Badge variant="secondary" className="bg-accent text-accent-foreground">
-                Administrator
-              </Badge>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Shield className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground">{user.name}</span>
+                <span className="text-sm text-muted-foreground capitalize">{profile?.role}</span>
+                <span className="text-sm text-muted-foreground">•</span>
+                <span className="text-sm text-muted-foreground">{profile?.full_name || data.user.email}</span>
               </div>
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/my">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Student View
-                </Link>
+                <Link href="/my">Student View</Link>
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
+              <form action="/auth/signout" method="post">
+                <Button variant="ghost" size="sm" type="submit">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </form>
             </div>
           </div>
         </div>
@@ -198,7 +109,7 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Submissions</p>
-                  <p className="text-2xl font-bold">{submissions.length}</p>
+                  <p className="text-2xl font-bold">{submissions?.length || 0}</p>
                 </div>
                 <FileText className="h-8 w-8 text-muted-foreground" />
               </div>
@@ -210,7 +121,7 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
-                  <p className="text-2xl font-bold">{submissions.filter((s) => s.status === "pending").length}</p>
+                  <p className="text-2xl font-bold">{submissions?.filter((s) => s.status === "pending").length || 0}</p>
                 </div>
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
@@ -221,10 +132,10 @@ export default function AdminDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Approved</p>
-                  <p className="text-2xl font-bold">{submissions.filter((s) => s.status === "approved").length}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Total Members</p>
+                  <p className="text-2xl font-bold">{totalUsers}</p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-600" />
+                <Users className="h-8 w-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
@@ -233,10 +144,10 @@ export default function AdminDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Rejected</p>
-                  <p className="text-2xl font-bold">{submissions.filter((s) => s.status === "rejected").length}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Students</p>
+                  <p className="text-2xl font-bold">{students}</p>
                 </div>
-                <XCircle className="h-8 w-8 text-red-600" />
+                <User className="h-8 w-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
@@ -245,10 +156,10 @@ export default function AdminDashboardPage() {
         {/* Quick Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <Button asChild>
-            <Link href="/admin/documents">Review All Submissions</Link>
+            <Link href="/admin/users">Manage Users</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/my">Switch to Student View</Link>
+            <Link href="/admin/submissions">Review Submissions</Link>
           </Button>
         </div>
 
@@ -259,7 +170,7 @@ export default function AdminDashboardPage() {
             <CardDescription>Latest project submissions requiring review</CardDescription>
           </CardHeader>
           <CardContent>
-            {submissions.length > 0 ? (
+            {submissions && submissions.length > 0 ? (
               <div className="space-y-4">
                 {submissions.slice(0, 10).map((submission) => (
                   <div
@@ -278,38 +189,12 @@ export default function AdminDashboardPage() {
                       </div>
                       <p className="text-sm text-muted-foreground mb-1">{submission.description}</p>
                       <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                        <span>Student: {submission.user_email}</span>
+                        <span>Student: {submission.profiles?.full_name || "Unknown"}</span>
                         <span>Category: {submission.category}</span>
                         <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      {submission.status === "pending" && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              updateSubmissionStatus(submission.id, "approved", "Document approved - great work!")
-                            }
-                            className="text-green-600 hover:text-green-700"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              updateSubmissionStatus(submission.id, "rejected", "Please revise and resubmit.")
-                            }
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <XCircle className="h-4 w-4 mr-1" />
-                            Reject
-                          </Button>
-                        </>
-                      )}
                       <Button variant="ghost" size="sm" asChild>
                         <Link href={`/admin/submissions/${submission.id}`}>Review</Link>
                       </Button>
