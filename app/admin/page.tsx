@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Users, FileText, Clock, CheckCircle, XCircle, User, LogOut, Shield } from "lucide-react"
+import { Users, FileText, Clock, CheckCircle, XCircle, User, Shield } from "lucide-react"
+import { LogoutButton } from "@/components/logout-button"
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
@@ -84,12 +85,7 @@ export default async function AdminDashboardPage() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/my">Student View</Link>
               </Button>
-              <form action="/auth/signout" method="post">
-                <Button variant="ghost" size="sm" type="submit">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </form>
+              <LogoutButton />
             </div>
           </div>
         </div>
