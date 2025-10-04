@@ -42,6 +42,9 @@ export default function SignUpPage() {
     }
 
     try {
+      const isAdmin = email.toLowerCase() === "president@aaitsa.org"
+      const userRole = isAdmin ? "admin" : "student"
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -50,7 +53,7 @@ export default function SignUpPage() {
           data: {
             full_name: fullName,
             school_year: schoolYear,
-            role: "student",
+            role: userRole,
           },
         },
       })

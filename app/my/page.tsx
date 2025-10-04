@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, FileText, Clock, CheckCircle, XCircle, User, LogOut } from "lucide-react"
+import { Plus, FileText, Clock, CheckCircle, XCircle, User } from "lucide-react"
+import { LogoutButton } from "@/components/logout-button"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -16,6 +17,10 @@ export default async function DashboardPage() {
 
   // Get user profile
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
+
+  if (profile && ["admin", "officer", "teacher"].includes(profile.role)) {
+    redirect("/admin")
+  }
 
   // Get user submissions
   const { data: submissions } = await supabase
@@ -59,18 +64,16 @@ export default async function DashboardPage() {
                 </div>
                 <span className="font-semibold">TSA Portal</span>
               </Link>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/about">About</Link>
+              </Button>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <User className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">{profile?.full_name || data.user.email}</span>
               </div>
-              <form action="/auth/signout" method="post">
-                <Button variant="ghost" size="sm" type="submit">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </form>
+              <LogoutButton />
             </div>
           </div>
         </div>

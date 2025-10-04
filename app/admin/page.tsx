@@ -74,6 +74,9 @@ export default async function AdminDashboardPage() {
                 </div>
                 <span className="font-semibold">TSA Admin</span>
               </Link>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/about">About</Link>
+              </Button>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">

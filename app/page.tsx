@@ -21,6 +21,9 @@ export default function HomePage() {
           <Button asChild className="w-full" size="lg">
             <Link href="/auth/login">Login to Portal</Link>
           </Button>
+          <Button asChild variant="outline" className="w-full bg-transparent" size="lg">
+            <Link href="/about">About Our Chapter</Link>
+          </Button>
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{" "}

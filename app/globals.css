@@ -4,20 +4,20 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color tokens to match Alliance Academy blue and Georgia TSA yellow/red */
+  /* Light mode - Alliance Academy blue and Georgia TSA yellow/red */
   --background: #ffffff;
   --foreground: #1f2937;
   --card: #f8fafc;
   --card-foreground: #1f2937;
   --popover: #ffffff;
   --popover-foreground: #1f2937;
-  --primary: #1e40af; /* Alliance Academy deep blue */
+  --primary: #1e40af;
   --primary-foreground: #ffffff;
-  --secondary: #fbbf24; /* Georgia TSA yellow/gold */
+  --secondary: #fbbf24;
   --secondary-foreground: #1f2937;
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
-  --accent: #dc2626; /* Georgia TSA red accent */
+  --accent: #dc2626;
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
@@ -41,39 +41,39 @@
 }
 
 .dark {
-  /* Updated dark mode colors to maintain the blue/yellow/red theme */
-  --background: #0f172a;
-  --foreground: #f1f5f9;
-  --card: #1e293b;
-  --card-foreground: #f1f5f9;
-  --popover: #0f172a;
-  --popover-foreground: #f1f5f9;
-  --primary: #3b82f6; /* Lighter blue for dark mode */
-  --primary-foreground: #0f172a;
-  --secondary: #fcd34d; /* Lighter yellow for dark mode */
-  --secondary-foreground: #0f172a;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #ef4444; /* Lighter red for dark mode */
-  --accent-foreground: #f1f5f9;
-  --destructive: #ef4444;
-  --destructive-foreground: #f1f5f9;
-  --border: #334155;
-  --input: #1e293b;
-  --ring: rgba(59, 130, 246, 0.3);
-  --chart-1: #3b82f6;
-  --chart-2: #fcd34d;
-  --chart-3: #ef4444;
-  --chart-4: #10b981;
-  --chart-5: #8b5cf6;
-  --sidebar: #1e293b;
-  --sidebar-foreground: #f1f5f9;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #0f172a;
-  --sidebar-accent: #fcd34d;
-  --sidebar-accent-foreground: #0f172a;
-  --sidebar-border: #334155;
-  --sidebar-ring: rgba(59, 130, 246, 0.3);
+  /* Enhanced dark theme with rich, appealing colors */
+  --background: #0a0f1e; /* Deep navy background for richness */
+  --foreground: #e8edf5; /* Soft white for excellent readability */
+  --card: #141b2e; /* Elevated card surface */
+  --card-foreground: #e8edf5;
+  --popover: #0f1729;
+  --popover-foreground: #e8edf5;
+  --primary: #4f8fff; /* Vibrant electric blue that pops */
+  --primary-foreground: #0a0f1e;
+  --secondary: #ffd93d; /* Bright golden yellow for energy */
+  --secondary-foreground: #0a0f1e;
+  --muted: #1a2235; /* Subtle muted surface */
+  --muted-foreground: #8b95ab; /* Softer muted text */
+  --accent: #ff5757; /* Vivid red accent */
+  --accent-foreground: #ffffff;
+  --destructive: #ff5757;
+  --destructive-foreground: #ffffff;
+  --border: #1f2937; /* Subtle borders */
+  --input: #141b2e; /* Input fields match cards */
+  --ring: rgba(79, 143, 255, 0.4); /* Glowing blue focus ring */
+  --chart-1: #4f8fff;
+  --chart-2: #ffd93d;
+  --chart-3: #ff5757;
+  --chart-4: #22d3ee; /* Cyan for variety */
+  --chart-5: #a78bfa; /* Purple for variety */
+  --sidebar: #0f1729; /* Darker sidebar for depth */
+  --sidebar-foreground: #e8edf5;
+  --sidebar-primary: #4f8fff;
+  --sidebar-primary-foreground: #0a0f1e;
+  --sidebar-accent: #ffd93d;
+  --sidebar-accent-foreground: #0a0f1e;
+  --sidebar-border: #1f2937;
+  --sidebar-ring: rgba(79, 143, 255, 0.4);
 }
 
 @theme inline {

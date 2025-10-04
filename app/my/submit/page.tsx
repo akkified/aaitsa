@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { ArrowLeft, Upload } from "lucide-react"
+import { ArrowLeft, Upload, X } from "lucide-react"
+import { createSubmission } from "@/app/actions/submissions"
 
 const TSA_CATEGORIES = [
   "Architectural Design",
@@ -55,6 +56,8 @@ export default function SubmitPage() {
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
   const [file, setFile] = useState<File | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [fileUrl, setFileUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
@@ -75,6 +78,50 @@ export default function SubmitPage() {
     getUser()
   }, [router, supabase.auth])
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
+    if (!selectedFile) return
+
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setError("File size must be less than 10MB")
+      return
+    }
+
+    setFile(selectedFile)
+    setError(null)
+
+    try {
+      setUploadProgress(10)
+      const formData = new FormData()
+      formData.append("file", selectedFile)
+
+      setUploadProgress(50)
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      setUploadProgress(80)
+      if (!response.ok) {
+        throw new Error("Upload failed")
+      }
+
+      const data = await response.json()
+      setFileUrl(data.url)
+      setUploadProgress(100)
+    } catch (error) {
+      setError("Failed to upload file. Please try again.")
+      setFile(null)
+      setUploadProgress(0)
+    }
+  }
+
+  const handleRemoveFile = () => {
+    setFile(null)
+    setFileUrl(null)
+    setUploadProgress(0)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
@@ -83,29 +130,20 @@ export default function SubmitPage() {
     setError(null)
 
     try {
-      let fileUrl = null
-
-      // Upload file if provided
-      if (file) {
-        const fileExt = file.name.split(".").pop()
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`
-
-        // Note: In a real implementation, you would upload to Vercel Blob or similar
-        // For now, we'll just store the filename
-        fileUrl = fileName
+      const formData = new FormData()
+      formData.append("title", title)
+      formData.append("category", category)
+      formData.append("description", description)
+      if (fileUrl) {
+        formData.append("fileUrl", fileUrl)
+        formData.append("fileName", file?.name || "")
       }
 
-      // Insert submission
-      const { error: insertError } = await supabase.from("submissions").insert({
-        user_id: user.id,
-        title,
-        description,
-        category,
-        file_url: fileUrl,
-        status: "pending",
-      })
+      const result = await createSubmission(formData)
 
-      if (insertError) throw insertError
+      if (result.error) {
+        throw new Error(result.error)
+      }
 
       router.push("/my")
     } catch (error: unknown) {
@@ -121,7 +159,6 @@ export default function SubmitPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <Link
@@ -188,25 +225,45 @@ export default function SubmitPage() {
                 <div className="space-y-2">
                   <Label htmlFor="file">Project File (Optional)</Label>
                   <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                    <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <div className="space-y-2">
-                      <Input
-                        id="file"
-                        type="file"
-                        accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.rar"
-                        onChange={(e) => setFile(e.target.files?.[0] || null)}
-                        className="max-w-xs mx-auto"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Accepted formats: PDF, DOC, DOCX, PPT, PPTX, ZIP, RAR (Max 10MB)
-                      </p>
-                    </div>
+                    {!file ? (
+                      <>
+                        <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                        <div className="space-y-2">
+                          <Input
+                            id="file"
+                            type="file"
+                            accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.rar"
+                            onChange={handleFileChange}
+                            className="max-w-xs mx-auto"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Accepted formats: PDF, DOC, DOCX, PPT, PPTX, ZIP, RAR (Max 10MB)
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-md">
+                          <div className="flex-1 text-left">
+                            <p className="text-sm font-medium">{file.name}</p>
+                            <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
+                          <Button type="button" variant="ghost" size="sm" onClick={handleRemoveFile} className="ml-2">
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        {uploadProgress > 0 && uploadProgress < 100 && (
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div
+                              className="bg-primary h-2 rounded-full transition-all"
+                              style={{ width: `${uploadProgress}%` }}
+                            />
+                          </div>
+                        )}
+                        {uploadProgress === 100 && <p className="text-xs text-green-600">✓ Upload complete</p>}
+                      </div>
+                    )}
                   </div>
-                  {file && (
-                    <p className="text-sm text-muted-foreground">
-                      Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                    </p>
-                  )}
                 </div>
 
                 {error && (
