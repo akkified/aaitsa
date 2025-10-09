@@ -16,20 +16,40 @@ export default async function AdminDashboardPage() {
   }
 
   // Get user profile and check admin access
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", data.user.id)
+    .single()
 
-  if (!profile || !["admin", "officer", "teacher"].includes(profile.role)) {
+  if (!profile) {
     redirect("/my")
   }
 
-  // Get all submissions for review
+  if (!["admin", "officer", "teacher"].includes(profile.role)) {
+    redirect("/my")
+  }
+
+  // Fetch submissions
   const { data: submissions } = await supabase
     .from("submissions")
-    .select(`
-      *,
-      profiles!submissions_user_id_fkey(full_name, email, school_year)
-    `)
+    .select("*")
     .order("submitted_at", { ascending: false })
+
+  const submissionsWithProfiles = await Promise.all(
+    (submissions || []).map(async (submission) => {
+      const { data: userProfile } = await supabase
+        .from("profiles")
+        .select("full_name, email, school_year")
+        .eq("id", submission.user_id)
+        .single()
+
+      return {
+        ...submission,
+        profiles: userProfile,
+      }
+    }),
+  )
 
   // Get user statistics
   const { data: userStats } = await supabase.from("profiles").select("role").neq("role", "admin")
@@ -155,10 +175,13 @@ export default async function AdminDashboardPage() {
         {/* Quick Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <Button asChild>
-            <Link href="/admin/users">Manage Users</Link>
+            <Link href="/admin/users">
+              <Shield className="mr-2 h-4 w-4" />
+              Manage User Roles
+            </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/admin/submissions">Review Submissions</Link>
+            <Link href="/my/submit">View Submissions</Link>
           </Button>
         </div>
 
@@ -169,9 +192,9 @@ export default async function AdminDashboardPage() {
             <CardDescription>Latest project submissions requiring review</CardDescription>
           </CardHeader>
           <CardContent>
-            {submissions && submissions.length > 0 ? (
+            {submissionsWithProfiles && submissionsWithProfiles.length > 0 ? (
               <div className="space-y-4">
-                {submissions.slice(0, 10).map((submission) => (
+                {submissionsWithProfiles.slice(0, 10).map((submission) => (
                   <div
                     key={submission.id}
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -189,6 +212,13 @@ export default async function AdminDashboardPage() {
                       <p className="text-sm text-muted-foreground mb-1">{submission.description}</p>
                       <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                         <span>Student: {submission.profiles?.full_name || "Unknown"}</span>
+                        <span>
+                          Grade:{" "}
+                          {submission.profiles?.school_year
+                            ? submission.profiles.school_year.charAt(0).toUpperCase() +
+                              submission.profiles.school_year.slice(1)
+                            : "Unknown"}
+                        </span>
                         <span>Category: {submission.category}</span>
                         <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
                       </div>

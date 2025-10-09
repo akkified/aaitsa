@@ -26,7 +26,7 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
         options: {
@@ -34,7 +34,18 @@ export default function LoginPage() {
         },
       })
       if (error) throw error
-      router.push("/my")
+
+      if (data.user) {
+        const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single()
+
+        if (profile && ["admin", "officer", "teacher"].includes(profile.role)) {
+          router.push("/admin")
+        } else {
+          router.push("/my")
+        }
+      } else {
+        router.push("/my")
+      }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {

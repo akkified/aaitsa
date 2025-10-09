@@ -42,7 +42,18 @@ export default function SignUpPage() {
     }
 
     try {
-      const isAdmin = email.toLowerCase() === "president@aaitsa.org"
+      const adminEmails = [
+        "advisor@aaitsa.org",
+        "president@aaitsa.org",
+        "vp@aaitsa.org",
+        "secondvp@aaitsa.org",
+        "secretary@aaitsa.org",
+        "sergeant@aaitsa.org",
+        "reporter@aaitsa.org",
+        "mechvp@aaitsa.org",
+        "csvp@aaitsa.org",
+      ]
+      const isAdmin = adminEmails.includes(email.toLowerCase())
       const userRole = isAdmin ? "admin" : "student"
 
       const { error } = await supabase.auth.signUp({

@@ -17,6 +17,7 @@ export default function ReviewSubmissionPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
+  const [submitterProfile, setSubmitterProfile] = useState<any>(null)
   const router = useRouter()
   const params = useParams()
   const supabase = createClient()
@@ -42,14 +43,7 @@ export default function ReviewSubmissionPage() {
     }
 
     const getSubmission = async () => {
-      const { data, error } = await supabase
-        .from("submissions")
-        .select(`
-          *,
-          profiles!submissions_user_id_fkey(full_name, email, school_year)
-        `)
-        .eq("id", params.id)
-        .single()
+      const { data, error } = await supabase.from("submissions").select("*").eq("id", params.id).single()
 
       if (error) {
         console.error("Error fetching submission:", error)
@@ -58,6 +52,16 @@ export default function ReviewSubmissionPage() {
 
       setSubmission(data)
       setFeedback(data.feedback || "")
+
+      if (data.user_id) {
+        const { data: userProfile } = await supabase
+          .from("profiles")
+          .select("full_name, email, school_year")
+          .eq("id", data.user_id)
+          .single()
+
+        setSubmitterProfile(userProfile)
+      }
     }
 
     getUser()
@@ -139,7 +143,7 @@ export default function ReviewSubmissionPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-2xl">{submission.title}</CardTitle>
-                  <CardDescription>Submitted by {submission.profiles?.full_name || "Unknown Student"}</CardDescription>
+                  <CardDescription>Submitted by {submitterProfile?.full_name || "Unknown Student"}</CardDescription>
                 </div>
                 <Badge className={`${getStatusColor(submission.status)} border`}>
                   <span className="flex items-center space-x-1">
@@ -153,17 +157,17 @@ export default function ReviewSubmissionPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                   <User className="h-4 w-4" />
-                  <span>Student: {submission.profiles?.full_name || "Unknown"}</span>
+                  <span>Student: {submitterProfile?.full_name || "Unknown"}</span>
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <span>Email: {submission.profiles?.email || "Unknown"}</span>
+                  <span>Email: {submitterProfile?.email || "Unknown"}</span>
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                   <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <span>Grade: {submission.profiles?.school_year || "Unknown"}</span>
+                  <span>Grade: {submitterProfile?.school_year || "Unknown"}</span>
                 </div>
               </div>
 

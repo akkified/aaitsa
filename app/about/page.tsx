@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, BookOpen, Users, Mail, Trophy, Lightbulb } from "lucide-react"
+import { Calendar, BookOpen, Users, Mail, Trophy, Lightbulb, User } from "lucide-react"
 
 export default function AboutPage() {
   return (
@@ -55,6 +55,38 @@ export default function AboutPage() {
               Our chapter competes at regional, state, and national levels in various technology competitions, from
               coding and engineering to digital design and leadership challenges.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Leadership Team */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <h3 className="text-3xl font-bold text-foreground mb-8 text-center">Leadership Team</h3>
+          <div className="max-w-3xl mx-auto grid md:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader className="text-center">
+                <User className="w-12 h-12 text-primary mx-auto mb-3" />
+                <CardTitle>Dr. Bryan Fagan</CardTitle>
+                <CardDescription className="text-base">Chapter Advisor</CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader className="text-center">
+                <User className="w-12 h-12 text-primary mx-auto mb-3" />
+                <CardTitle>Sean Track</CardTitle>
+                <CardDescription className="text-base">President</CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader className="text-center">
+                <User className="w-12 h-12 text-primary mx-auto mb-3" />
+                <CardTitle>Shreyas Yeldandi</CardTitle>
+                <CardDescription className="text-base">Vice President</CardDescription>
+              </CardHeader>
+            </Card>
           </div>
         </div>
       </section>

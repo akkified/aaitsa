@@ -16,10 +16,16 @@ export default async function DashboardPage() {
   }
 
   // Get user profile
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", data.user.id)
+    .single()
 
-  if (profile && ["admin", "officer", "teacher"].includes(profile.role)) {
-    redirect("/admin")
+  if (profile) {
+    if (["admin", "officer", "teacher"].includes(profile.role)) {
+      redirect("/admin")
+    }
   }
 
   // Get user submissions
