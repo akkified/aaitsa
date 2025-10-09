@@ -1,63 +1,115 @@
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+"use client"
+
+import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
-import { Users, FileText, Clock, CheckCircle, XCircle, User, Shield } from "lucide-react"
+import { Users, FileText, Clock, CheckCircle, XCircle, User, Shield, ArrowUpDown } from "lucide-react"
 import { LogoutButton } from "@/components/logout-button"
+import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
 
-export default async function AdminDashboardPage() {
-  const supabase = await createClient()
+export default function AdminDashboardPage() {
+  const [submissionsWithProfiles, setSubmissionsWithProfiles] = useState<any[]>([])
+  const [userStats, setUserStats] = useState<any[]>([])
+  const [profile, setProfile] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [sortBy, setSortBy] = useState("submitted_at")
+  const [sortOrder, setSortOrder] = useState("desc")
+  const router = useRouter()
+  const supabase = createClient()
 
-  const { data, error } = await supabase.auth.getUser()
-  if (error || !data?.user) {
-    redirect("/auth/login")
-  }
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
 
-  // Get user profile and check admin access
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", data.user.id)
-    .single()
+        if (userError || !user) {
+          router.push("/auth/login")
+          return
+        }
 
-  if (!profile) {
-    redirect("/my")
-  }
+        // Get user profile and check admin access
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single()
 
-  if (!["admin", "officer", "teacher"].includes(profile.role)) {
-    redirect("/my")
-  }
+        if (!profile) {
+          router.push("/my")
+          return
+        }
 
-  // Fetch submissions
-  const { data: submissions } = await supabase
-    .from("submissions")
-    .select("*")
-    .order("submitted_at", { ascending: false })
+        if (!["admin", "officer", "teacher"].includes(profile.role)) {
+          router.push("/my")
+          return
+        }
 
-  const submissionsWithProfiles = await Promise.all(
-    (submissions || []).map(async (submission) => {
-      const { data: userProfile } = await supabase
-        .from("profiles")
-        .select("full_name, email, school_year")
-        .eq("id", submission.user_id)
-        .single()
+        setProfile(profile)
 
-      return {
-        ...submission,
-        profiles: userProfile,
+        // Fetch submissions
+        const { data: submissions } = await supabase
+          .from("submissions")
+          .select("*")
+          .order("submitted_at", { ascending: false })
+
+        const submissionsWithProfiles = await Promise.all(
+          (submissions || []).map(async (submission) => {
+            const { data: userProfile } = await supabase
+              .from("profiles")
+              .select("full_name, email, school_year")
+              .eq("id", submission.user_id)
+              .single()
+
+            return {
+              ...submission,
+              profiles: userProfile,
+            }
+          }),
+        )
+
+        setSubmissionsWithProfiles(submissionsWithProfiles)
+
+        // Get user statistics
+        const { data: userStats } = await supabase.from("profiles").select("role").neq("role", "admin")
+        setUserStats(userStats || [])
+      } catch (error) {
+        console.error("Error loading data:", error)
+      } finally {
+        setIsLoading(false)
       }
-    }),
-  )
+    }
 
-  // Get user statistics
-  const { data: userStats } = await supabase.from("profiles").select("role").neq("role", "admin")
+    loadData()
+  }, [router, supabase])
 
-  const totalUsers = userStats?.length || 0
-  const students = userStats?.filter((u) => u.role === "student").length || 0
-  const teachers = userStats?.filter((u) => u.role === "teacher").length || 0
-  const officers = userStats?.filter((u) => u.role === "officer").length || 0
+  const totalUsers = userStats.length
+  const students = userStats.filter((u) => u.role === "student").length
+  const teachers = userStats.filter((u) => u.role === "teacher").length
+  const officers = userStats.filter((u) => u.role === "officer").length
+
+  // Sort submissions based on selected criteria
+  const sortedSubmissions = [...submissionsWithProfiles].sort((a, b) => {
+    let comparison = 0
+
+    if (sortBy === "category") {
+      comparison = a.category.localeCompare(b.category)
+    } else if (sortBy === "submitted_at") {
+      comparison = new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime()
+    } else if (sortBy === "status") {
+      comparison = a.status.localeCompare(b.status)
+    } else if (sortBy === "title") {
+      comparison = a.title.localeCompare(b.title)
+    }
+
+    return sortOrder === "desc" ? -comparison : comparison
+  })
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -79,6 +131,37 @@ export default async function AdminDashboardPage() {
       default:
         return "bg-yellow-100 text-yellow-800 border-yellow-200"
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
+            <h2 className="text-lg font-semibold mb-2">Loading...</h2>
+            <p className="text-muted-foreground">Fetching admin dashboard data</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-lg font-semibold mb-2">Access Denied</h2>
+            <p className="text-muted-foreground mb-4">You don't have permission to access this page.</p>
+            <Button asChild>
+              <Link href="/my">Return to Dashboard</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -103,7 +186,7 @@ export default async function AdminDashboardPage() {
                 <Shield className="h-4 w-4 text-primary" />
                 <span className="text-sm text-muted-foreground capitalize">{profile?.role}</span>
                 <span className="text-sm text-muted-foreground">•</span>
-                <span className="text-sm text-muted-foreground">{profile?.full_name || data.user.email}</span>
+                <span className="text-sm text-muted-foreground">{profile?.full_name || "Admin"}</span>
               </div>
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/my">Student View</Link>
@@ -194,15 +277,41 @@ export default async function AdminDashboardPage() {
         {/* Recent Submissions */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Submissions</CardTitle>
-            <CardDescription>Latest project submissions requiring review</CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle>Recent Submissions</CardTitle>
+                <CardDescription>Latest project submissions requiring review</CardDescription>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="submitted_at">Submission Date</SelectItem>
+                    <SelectItem value="category">Category</SelectItem>
+                    <SelectItem value="status">Status</SelectItem>
+                    <SelectItem value="title">Title</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={sortOrder} onValueChange={setSortOrder}>
+                  <SelectTrigger className="w-full sm:w-[120px]">
+                    <SelectValue placeholder="Order" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="desc">Descending</SelectItem>
+                    <SelectItem value="asc">Ascending</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            {submissionsWithProfiles && submissionsWithProfiles.length > 0 ? (
+            {sortedSubmissions && sortedSubmissions.length > 0 ? (
               <div className="space-y-6">
                 {/* Group submissions by submission_group */}
                 {Object.entries(
-                  submissionsWithProfiles.slice(0, 20).reduce((groups: Record<string, any[]>, submission) => {
+                  sortedSubmissions.slice(0, 20).reduce((groups: Record<string, any[]>, submission) => {
                     const groupKey = submission.submission_group || 'Ungrouped'
                     if (!groups[groupKey]) {
                       groups[groupKey] = []
