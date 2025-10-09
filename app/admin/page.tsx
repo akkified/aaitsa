@@ -211,7 +211,7 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Submissions</p>
-                  <p className="text-2xl font-bold">{submissions?.length || 0}</p>
+                  <p className="text-2xl font-bold">{submissionsWithProfiles?.length || 0}</p>
                 </div>
                 <FileText className="h-8 w-8 text-muted-foreground" />
               </div>
@@ -223,7 +223,7 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
-                  <p className="text-2xl font-bold">{submissions?.filter((s) => s.status === "pending").length || 0}</p>
+                  <p className="text-2xl font-bold">{submissionsWithProfiles?.filter((s) => s.status === "pending").length || 0}</p>
                 </div>
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
