@@ -104,8 +104,10 @@ export default function SignUpPage() {
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input
                   id="fullName"
+                  name="fullName"
                   type="text"
                   placeholder="John Doe"
+                  autoComplete="name"
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -115,8 +117,10 @@ export default function SignUpPage() {
                 <Label htmlFor="email">School Email</Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="your.email@allianceacademy.edu"
+                  autoComplete="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -140,7 +144,9 @@ export default function SignUpPage() {
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
+                  name="password"
                   type="password"
+                  autoComplete="new-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -150,7 +156,9 @@ export default function SignUpPage() {
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input
                   id="confirmPassword"
+                  name="confirmPassword"
                   type="password"
+                  autoComplete="new-password"
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

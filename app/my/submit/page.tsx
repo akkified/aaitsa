@@ -190,8 +190,10 @@ export default function SubmitPage() {
                   <Label htmlFor="title">Project Title</Label>
                   <Input
                     id="title"
+                    name="title"
                     type="text"
                     placeholder="Enter your project title"
+                    autoComplete="off"
                     required
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -218,7 +220,9 @@ export default function SubmitPage() {
                   <Label htmlFor="description">Project Description</Label>
                   <Textarea
                     id="description"
+                    name="description"
                     placeholder="Describe your project, methodology, and key features..."
+                    autoComplete="off"
                     rows={4}
                     required
                     value={description}
@@ -231,7 +235,9 @@ export default function SubmitPage() {
                     <Label htmlFor="submissionGroup">Submission Group (Optional)</Label>
                     <Input
                       id="submissionGroup"
+                      name="submissionGroup"
                       placeholder="e.g., Q1 2024, Spring Competition, etc."
+                      autoComplete="off"
                       value={submissionGroup}
                       onChange={(e) => setSubmissionGroup(e.target.value)}
                     />
@@ -240,7 +246,9 @@ export default function SubmitPage() {
                     <Label htmlFor="checkInDate">Check-in Date (Optional)</Label>
                     <Input
                       id="checkInDate"
+                      name="checkInDate"
                       type="date"
+                      autoComplete="off"
                       value={checkInDate}
                       onChange={(e) => setCheckInDate(e.target.value)}
                     />
@@ -256,8 +264,10 @@ export default function SubmitPage() {
                         <div className="space-y-2">
                           <Input
                             id="file"
+                            name="file"
                             type="file"
                             accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.rar"
+                            autoComplete="off"
                             onChange={handleFileChange}
                             className="max-w-xs mx-auto"
                           />

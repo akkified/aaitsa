@@ -223,6 +223,8 @@ export default function AdminAboutPage() {
                     <Label htmlFor={`title_${item.id}`}>Title</Label>
                     <Input
                       id={`title_${item.id}`}
+                      name={`title_${item.id}`}
+                      autoComplete="off"
                       value={editingContent[`title_${item.id}`] || ""}
                       onChange={(e) =>
                         setEditingContent((prev) => ({
@@ -236,6 +238,8 @@ export default function AdminAboutPage() {
                     <Label htmlFor={`content_${item.id}`}>Content</Label>
                     <Textarea
                       id={`content_${item.id}`}
+                      name={`content_${item.id}`}
+                      autoComplete="off"
                       rows={4}
                       value={editingContent[`content_${item.id}`] || ""}
                       onChange={(e) =>

@@ -216,7 +216,9 @@ export default function ReviewSubmissionPage() {
                 <Label htmlFor="feedback">Feedback (Optional)</Label>
                 <Textarea
                   id="feedback"
+                  name="feedback"
                   placeholder="Provide constructive feedback for the student..."
+                  autoComplete="off"
                   rows={4}
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
