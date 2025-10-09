@@ -19,6 +19,8 @@ export async function createSubmission(formData: FormData) {
   const title = formData.get("title") as string
   const category = formData.get("category") as string
   const description = formData.get("description") as string
+  const submissionGroup = formData.get("submissionGroup") as string
+  const checkInDate = formData.get("checkInDate") as string
   const fileUrl = formData.get("fileUrl") as string
   const fileName = formData.get("fileName") as string
 
@@ -34,6 +36,8 @@ export async function createSubmission(formData: FormData) {
       title,
       category,
       description,
+      submission_group: submissionGroup || null,
+      check_in_date: checkInDate || null,
       file_url: fileUrl,
       file_name: fileName,
       status: "pending",

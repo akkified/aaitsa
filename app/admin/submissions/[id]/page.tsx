@@ -184,9 +184,21 @@ export default function ReviewSubmissionPage() {
               {submission.file_url && (
                 <div>
                   <h3 className="font-semibold mb-2">Attached File</h3>
-                  <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">{submission.file_url}</span>
+                  <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        {submission.file_url.split('/').pop() || 'Submitted File'}
+                      </span>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(submission.file_url, '_blank')}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      View/Download
+                    </Button>
                   </div>
                 </div>
               )}

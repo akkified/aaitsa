@@ -24,6 +24,20 @@ export default function HomePage() {
           <Button asChild variant="outline" className="w-full bg-transparent" size="lg">
             <Link href="/about">About Our Chapter</Link>
           </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/competitions">Competitions</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/gallery">Gallery</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/resources">Resources</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/about">Learn More</Link>
+            </Button>
+          </div>
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{" "}

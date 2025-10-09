@@ -1,8 +1,13 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { ArrowLeft, FileText, Download, Clock, CheckCircle, XCircle } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
 
 interface SubmissionPageProps {
   params: {
@@ -11,40 +16,65 @@ interface SubmissionPageProps {
 }
 
 export default function SubmissionPage({ params }: SubmissionPageProps) {
-  // Mock submission data based on ID
-  const mockSubmissions: Record<string, any> = {
-    "1": {
-      id: "1",
-      title: "Biotechnology Design Portfolio",
-      description:
-        "Complete portfolio showcasing biotechnology innovation project including research, design process, and final prototype documentation.",
-      category: "Biotechnology Design",
-      status: "pending",
-      submitted_at: "2024-01-15T10:00:00Z",
-      feedback: null,
-      files: [
-        { name: "biotech-portfolio.pdf", size: "2.4 MB", type: "application/pdf" },
-        { name: "prototype-images.zip", size: "15.7 MB", type: "application/zip" },
-      ],
-    },
-    "2": {
-      id: "2",
-      title: "Engineering Design Process Documentation",
-      description:
-        "Step-by-step documentation of engineering design methodology applied to sustainable energy solutions.",
-      category: "Engineering Design",
-      status: "approved",
-      submitted_at: "2024-01-10T14:30:00Z",
-      feedback:
-        "Excellent work! Great attention to detail in the design process. The sustainable energy focus shows innovative thinking.",
-      files: [
-        { name: "engineering-design-doc.pdf", size: "3.1 MB", type: "application/pdf" },
-        { name: "calculations.xlsx", size: "890 KB", type: "application/vnd.ms-excel" },
-      ],
-    },
-  }
+  const [submission, setSubmission] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<any>(null)
+  const router = useRouter()
+  const supabase = createClient()
 
-  const submission = mockSubmissions[params.id]
+  useEffect(() => {
+    const getUserAndSubmission = async () => {
+      try {
+        // Get current user
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+          router.push("/auth/login")
+          return
+        }
+
+        setUser(user)
+
+        // Get submission
+        const { data, error } = await supabase
+          .from("submissions")
+          .select("*")
+          .eq("id", params.id)
+          .eq("user_id", user.id) // Ensure user can only see their own submissions
+          .single()
+
+        if (error) {
+          console.error("Error fetching submission:", error)
+          setSubmission(null)
+        } else {
+          setSubmission(data)
+        }
+      } catch (error) {
+        console.error("Error:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    getUserAndSubmission()
+  }, [params.id, router, supabase])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
+            <h2 className="text-lg font-semibold mb-2">Loading...</h2>
+            <p className="text-muted-foreground">Fetching submission details</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   if (!submission) {
     return (
@@ -53,7 +83,7 @@ export default function SubmissionPage({ params }: SubmissionPageProps) {
           <CardContent className="p-6 text-center">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-lg font-semibold mb-2">Submission Not Found</h2>
-            <p className="text-muted-foreground mb-4">The submission you're looking for doesn't exist.</p>
+            <p className="text-muted-foreground mb-4">The submission you're looking for doesn't exist or you don't have permission to view it.</p>
             <Button asChild>
               <Link href="/my">Return to Dashboard</Link>
             </Button>
@@ -144,23 +174,32 @@ export default function SubmissionPage({ params }: SubmissionPageProps) {
               <CardDescription>Documents and files included with this submission</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {submission.files.map((file: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+              {submission.file_url ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center space-x-3">
                       <FileText className="h-8 w-8 text-muted-foreground" />
                       <div>
-                        <p className="font-medium">{file.name}</p>
-                        <p className="text-sm text-muted-foreground">{file.size}</p>
+                        <p className="font-medium">{submission.file_url.split('/').pop() || 'Submitted File'}</p>
+                        <p className="text-sm text-muted-foreground">Click to download</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(submission.file_url, '_blank')}
+                    >
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </Button>
                   </div>
-                ))}
-              </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No files attached to this submission</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

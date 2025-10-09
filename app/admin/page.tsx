@@ -181,6 +181,12 @@ export default async function AdminDashboardPage() {
             </Link>
           </Button>
           <Button variant="outline" asChild>
+            <Link href="/admin/about">
+              <Shield className="mr-2 h-4 w-4" />
+              Edit About Page
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
             <Link href="/my/submit">View Submissions</Link>
           </Button>
         </div>
@@ -193,40 +199,65 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             {submissionsWithProfiles && submissionsWithProfiles.length > 0 ? (
-              <div className="space-y-4">
-                {submissionsWithProfiles.slice(0, 10).map((submission) => (
-                  <div
-                    key={submission.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="font-semibold">{submission.title}</h3>
-                        <Badge className={`${getStatusColor(submission.status)} border`}>
-                          <span className="flex items-center space-x-1">
-                            {getStatusIcon(submission.status)}
-                            <span className="capitalize">{submission.status}</span>
-                          </span>
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-1">{submission.description}</p>
-                      <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                        <span>Student: {submission.profiles?.full_name || "Unknown"}</span>
-                        <span>
-                          Grade:{" "}
-                          {submission.profiles?.school_year
-                            ? submission.profiles.school_year.charAt(0).toUpperCase() +
-                              submission.profiles.school_year.slice(1)
-                            : "Unknown"}
-                        </span>
-                        <span>Category: {submission.category}</span>
-                        <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/submissions/${submission.id}`}>Review</Link>
-                      </Button>
+              <div className="space-y-6">
+                {/* Group submissions by submission_group */}
+                {Object.entries(
+                  submissionsWithProfiles.slice(0, 20).reduce((groups: Record<string, any[]>, submission) => {
+                    const groupKey = submission.submission_group || 'Ungrouped'
+                    if (!groups[groupKey]) {
+                      groups[groupKey] = []
+                    }
+                    groups[groupKey].push(submission)
+                    return groups
+                  }, {})
+                ).map(([groupName, groupSubmissions]) => (
+                  <div key={groupName}>
+                    <h4 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
+                      {groupName}
+                      <Badge variant="outline" className="text-xs">
+                        {groupSubmissions.length} submission{groupSubmissions.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </h4>
+                    <div className="space-y-3 ml-4">
+                      {groupSubmissions.map((submission) => (
+                        <div
+                          key={submission.id}
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h3 className="font-semibold">{submission.title}</h3>
+                              <Badge className={`${getStatusColor(submission.status)} border`}>
+                                <span className="flex items-center space-x-1">
+                                  {getStatusIcon(submission.status)}
+                                  <span className="capitalize">{submission.status}</span>
+                                </span>
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-1">{submission.description}</p>
+                            <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                              <span>Student: {submission.profiles?.full_name || "Unknown"}</span>
+                              <span>
+                                Grade:{" "}
+                                {submission.profiles?.school_year
+                                  ? submission.profiles.school_year.charAt(0).toUpperCase() +
+                                    submission.profiles.school_year.slice(1)
+                                  : "Unknown"}
+                              </span>
+                              <span>Category: {submission.category}</span>
+                              <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
+                              {submission.check_in_date && (
+                                <span>Check-in: {new Date(submission.check_in_date).toLocaleDateString()}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button variant="ghost" size="sm" asChild>
+                              <Link href={`/admin/submissions/${submission.id}`}>Review</Link>
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}

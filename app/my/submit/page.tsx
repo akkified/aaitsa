@@ -55,6 +55,8 @@ export default function SubmitPage() {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
+  const [submissionGroup, setSubmissionGroup] = useState("")
+  const [checkInDate, setCheckInDate] = useState("")
   const [file, setFile] = useState<File | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [fileUrl, setFileUrl] = useState<string | null>(null)
@@ -134,6 +136,8 @@ export default function SubmitPage() {
       formData.append("title", title)
       formData.append("category", category)
       formData.append("description", description)
+      formData.append("submissionGroup", submissionGroup)
+      formData.append("checkInDate", checkInDate)
       if (fileUrl) {
         formData.append("fileUrl", fileUrl)
         formData.append("fileName", file?.name || "")
@@ -220,6 +224,27 @@ export default function SubmitPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="submissionGroup">Submission Group (Optional)</Label>
+                    <Input
+                      id="submissionGroup"
+                      placeholder="e.g., Q1 2024, Spring Competition, etc."
+                      value={submissionGroup}
+                      onChange={(e) => setSubmissionGroup(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="checkInDate">Check-in Date (Optional)</Label>
+                    <Input
+                      id="checkInDate"
+                      type="date"
+                      value={checkInDate}
+                      onChange={(e) => setCheckInDate(e.target.value)}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
