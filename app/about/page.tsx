@@ -15,7 +15,7 @@ interface AboutContent {
 
 export default async function AboutPage() {
   const supabase = await createClient()
-  
+
   // Get about page content from database
   const { data: content } = await supabase
     .from("about_page_content")
@@ -25,7 +25,7 @@ export default async function AboutPage() {
 
   // Helper function to get content by section key
   const getContent = (sectionKey: string) => {
-    return content?.find(item => item.section_key === sectionKey)
+    return content?.find((item) => item.section_key === sectionKey)
   }
 
   const heroContent = getContent("hero")
@@ -37,7 +37,7 @@ export default async function AboutPage() {
   const contactContent = getContent("contact")
   const contactEmailContent = getContent("contact_email")
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -62,26 +62,28 @@ export default async function AboutPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-accent/5 to-background py-20">
+      <section className="py-20">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
             {heroContent?.title || "Welcome to Alliance Academy TSA"}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
-            {heroContent?.content || "Empowering students through technology, innovation, and leadership in the Technology Student Association"}
+            {heroContent?.content ||
+              "Empowering students through technology, innovation, and leadership in the Technology Student Association"}
           </p>
         </div>
       </section>
 
       {/* About Section */}
-      <section className="py-16 bg-card">
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <h3 className="text-3xl font-bold text-foreground mb-6 text-center">
               {aboutContent?.title || "About Our Chapter"}
             </h3>
             <div className="text-lg text-muted-foreground text-pretty whitespace-pre-line">
-              {aboutContent?.content || `The Alliance Academy TSA chapter is dedicated to fostering innovation, creativity, and technical excellence among our students. We participate in competitive events, collaborate on projects, and develop skills that prepare us for future careers in STEM fields.
+              {aboutContent?.content ||
+                `The Alliance Academy TSA chapter is dedicated to fostering innovation, creativity, and technical excellence among our students. We participate in competitive events, collaborate on projects, and develop skills that prepare us for future careers in STEM fields.
 
 Our chapter competes at regional, state, and national levels in various technology competitions, from coding and engineering to digital design and leadership challenges.`}
             </div>
@@ -116,7 +118,9 @@ Our chapter competes at regional, state, and national levels in various technolo
               <CardHeader className="text-center">
                 <User className="w-12 h-12 text-primary mx-auto mb-3" />
                 <CardTitle>{vicePresidentContent?.title || "Shreyas Yeldandi"}</CardTitle>
-                <CardDescription className="text-base">{vicePresidentContent?.content || "Vice President"}</CardDescription>
+                <CardDescription className="text-base">
+                  {vicePresidentContent?.content || "Vice President"}
+                </CardDescription>
               </CardHeader>
             </Card>
           </div>
@@ -157,7 +161,7 @@ Our chapter competes at regional, state, and national levels in various technolo
       </section>
 
       {/* Upcoming Events */}
-      <section className="py-16 bg-card">
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <h3 className="text-3xl font-bold text-foreground mb-8 text-center">Upcoming Events</h3>
           <div className="max-w-3xl mx-auto space-y-4">
@@ -218,7 +222,9 @@ Our chapter competes at regional, state, and national levels in various technolo
               <CardHeader>
                 <BookOpen className="w-8 h-8 text-primary mb-2" />
                 <CardTitle>Resources</CardTitle>
-                <CardDescription>Access competition guidelines, learning materials, and chapter information</CardDescription>
+                <CardDescription>
+                  Access competition guidelines, learning materials, and chapter information
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/resources" className="text-primary hover:underline">
@@ -272,18 +278,17 @@ Our chapter competes at regional, state, and national levels in various technolo
       </section>
 
       {/* Contact */}
-      <section className="py-16 bg-card">
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h3 className="text-3xl font-bold text-foreground mb-4">
-              {contactContent?.title || "Get in Touch"}
-            </h3>
+            <h3 className="text-3xl font-bold text-foreground mb-4">{contactContent?.title || "Get in Touch"}</h3>
             <p className="text-lg text-muted-foreground mb-6 text-pretty">
-              {contactContent?.content || "Have questions about joining TSA or participating in competitions? Contact our chapter advisors."}
+              {contactContent?.content ||
+                "Have questions about joining TSA or participating in competitions? Contact our chapter advisors."}
             </p>
-            <a 
-              href={`mailto:${contactEmailContent?.content || "tsa@alliance.forsyth.k12.ga.us"}`} 
+            <a
+              href={`mailto:${contactEmailContent?.content || "tsa@alliance.forsyth.k12.ga.us"}`}
               className="text-primary hover:underline text-lg"
             >
               {contactEmailContent?.content || "tsa@alliance.forsyth.k12.ga.us"}

@@ -1,8 +1,8 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Image, Calendar, Users, Award, ArrowLeft, Camera, Trophy } from "lucide-react"
+import { ImageIcon, Calendar, Users, Award, ArrowLeft } from "lucide-react"
 
 export default function GalleryPage() {
   const galleryItems = [
@@ -70,13 +70,13 @@ export default function GalleryPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
-      <header className="border-b bg-card">
+      <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <Camera className="w-7 h-7 text-primary-foreground" />
+              <ArrowLeft className="w-7 h-7 text-primary-foreground" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">Alliance Academy TSA</h1>
@@ -98,12 +98,10 @@ export default function GalleryPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-accent/5 to-background py-20">
+      <section className="py-20">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
-              Chapter Gallery
-            </h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">Chapter Gallery</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty mb-8">
               Explore our journey through photos, achievements, and memorable moments
             </p>
@@ -129,7 +127,7 @@ export default function GalleryPage() {
             {galleryItems.map((item) => (
               <Card key={item.id} className="overflow-hidden">
                 <div className="aspect-video bg-muted flex items-center justify-center">
-                  <Image className="h-16 w-16 text-muted-foreground" />
+                  <ImageIcon className="h-16 w-16 text-muted-foreground" />
                 </div>
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -147,11 +145,11 @@ export default function GalleryPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-4">{item.description}</p>
-                  
+
                   {item.achievements.length > 0 && (
                     <div>
                       <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                        <Trophy className="h-4 w-4 text-primary" />
+                        <Award className="h-4 w-4 text-primary" />
                         Achievements:
                       </h4>
                       <ul className="text-xs text-muted-foreground space-y-1">
@@ -172,7 +170,7 @@ export default function GalleryPage() {
       </section>
 
       {/* Achievements Section */}
-      <section className="py-16 bg-card">
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h3 className="text-3xl font-bold text-foreground mb-8 text-center">Recent Achievements</h3>
@@ -207,8 +205,8 @@ export default function GalleryPage() {
             <Users className="w-12 h-12 text-primary mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-foreground mb-4">Be Part of Our Story</h3>
             <p className="text-muted-foreground mb-6">
-              Join our chapter and create your own memorable moments. Participate in competitions, 
-              collaborate on projects, and build lasting friendships.
+              Join our chapter and create your own memorable moments. Participate in competitions, collaborate on
+              projects, and build lasting friendships.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg">

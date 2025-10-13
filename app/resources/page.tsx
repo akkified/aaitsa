@@ -1,19 +1,8 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { 
-  BookOpen, 
-  Download, 
-  ExternalLink, 
-  ArrowLeft, 
-  FileText, 
-  Users, 
-  Calendar,
-  Lightbulb,
-  Target,
-  Award
-} from "lucide-react"
+import { BookOpen, Download, ExternalLink, ArrowLeft, FileText, Users, Calendar, Lightbulb, Target } from "lucide-react"
 
 export default function ResourcesPage() {
   const resources = [
@@ -155,7 +144,7 @@ export default function ResourcesPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -183,12 +172,10 @@ export default function ResourcesPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-accent/5 to-background py-20">
+      <section className="py-20">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
-              Resources & Materials
-            </h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">Resources & Materials</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty mb-8">
               Everything you need to succeed in TSA competitions and chapter activities
             </p>
@@ -218,8 +205,8 @@ export default function ResourcesPage() {
                   <link.icon className="h-8 w-8 text-primary mx-auto mb-3" />
                   <h4 className="font-semibold mb-2">{link.title}</h4>
                   <p className="text-sm text-muted-foreground mb-4">{link.description}</p>
-                  <Button asChild variant="outline" size="sm" className="w-full">
-                    <Link href={link.url} target={link.url.startsWith('http') ? '_blank' : '_self'}>
+                  <Button asChild variant="outline" size="sm" className="w-full bg-transparent">
+                    <Link href={link.url} target={link.url.startsWith("http") ? "_blank" : "_self"}>
                       Visit
                     </Link>
                   </Button>
@@ -231,7 +218,7 @@ export default function ResourcesPage() {
       </section>
 
       {/* Resources by Category */}
-      <section className="py-16 bg-card">
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <h3 className="text-2xl font-bold text-foreground mb-8 text-center">Resources by Category</h3>
           <div className="space-y-12">
@@ -260,10 +247,7 @@ export default function ResourcesPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">{item.size}</span>
                           <Button asChild variant="outline" size="sm">
-                            <Link 
-                              href={item.url} 
-                              target={item.external ? '_blank' : '_self'}
-                            >
+                            <Link href={item.url} target={item.external ? "_blank" : "_self"}>
                               {item.external ? (
                                 <>
                                   <ExternalLink className="h-3 w-3 mr-1" />
@@ -317,7 +301,7 @@ export default function ResourcesPage() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-16 bg-card">
+      <section className="py-16">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-2xl mx-auto">
             <Lightbulb className="w-12 h-12 text-primary mx-auto mb-4" />

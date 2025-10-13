@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Trophy, Calendar, Users, Award, ArrowLeft, Target } from "lucide-react"
 
@@ -76,7 +76,7 @@ export default function CompetitionsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -104,12 +104,10 @@ export default function CompetitionsPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-accent/5 to-background py-20">
+      <section className="py-20">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
-              TSA Competitions
-            </h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">TSA Competitions</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty mb-8">
               Explore the exciting world of technology competitions where innovation meets creativity
             </p>
@@ -154,7 +152,7 @@ export default function CompetitionsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground">{competition.description}</p>
-                  
+
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div className="flex items-center gap-2">
                       <Users className="h-3 w-3 text-muted-foreground" />
@@ -185,14 +183,14 @@ export default function CompetitionsPage() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-16 bg-card">
+      <section className="py-16">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-2xl mx-auto">
             <Award className="w-12 h-12 text-primary mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-foreground mb-4">Ready to Compete?</h3>
             <p className="text-muted-foreground mb-6">
-              Join our chapter and participate in these exciting competitions. Develop your skills, 
-              work with talented peers, and compete at regional, state, and national levels.
+              Join our chapter and participate in these exciting competitions. Develop your skills, work with talented
+              peers, and compete at regional, state, and national levels.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg">
