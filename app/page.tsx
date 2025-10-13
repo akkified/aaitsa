@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import { Trophy, Users, Lightbulb, Calendar, BookOpen, Award, ArrowRight } from "lucide-react"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -27,7 +28,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      <section className="bg-gradient-to-br from-primary/10 via-accent/5 to-background py-20 md:py-32">
+      <section className="py-20 md:py-32">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto">
             <div className="w-20 h-20 bg-primary rounded-lg flex items-center justify-center mx-auto mb-6">
@@ -106,7 +107,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24 bg-card">
+      <section className="py-16 md:py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Explore Our Chapter</h3>
@@ -226,7 +227,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24 bg-gradient-to-br from-primary/10 via-accent/5 to-background">
+      <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Ready to Get Started?</h3>
@@ -245,7 +246,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="border-t py-8 bg-card">
+      <footer className="border-t py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
           <p>© {new Date().getFullYear()} Alliance Academy TSA Chapter. All rights reserved.</p>
         </div>
