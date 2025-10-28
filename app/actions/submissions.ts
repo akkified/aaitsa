@@ -22,32 +22,35 @@ export async function createSubmission(formData: FormData) {
   const submissionGroup = formData.get("submissionGroup") as string
   const checkInDate = formData.get("checkInDate") as string
   const fileUrl = formData.get("fileUrl") as string
-  const fileName = formData.get("fileName") as string
 
   if (!title || !category || !description) {
     return { error: "Please fill in all required fields" }
   }
 
+  // Prepare submission data - start with required fields only
+  const submissionData: any = {
+    user_id: user.id,
+    title,
+    category,
+    description,
+    status: "pending",
+  }
+
+  // Add optional file URL if provided
+  if (fileUrl) {
+    submissionData.file_url = fileUrl
+  }
+
   // Insert submission
   const { data, error } = await supabase
     .from("submissions")
-    .insert({
-      user_id: user.id,
-      title,
-      category,
-      description,
-      submission_group: submissionGroup || null,
-      check_in_date: checkInDate || null,
-      file_url: fileUrl,
-      file_name: fileName,
-      status: "pending",
-    })
+    .insert(submissionData)
     .select()
     .single()
 
   if (error) {
     console.error("[v0] Submission error:", error)
-    return { error: "Failed to create submission" }
+    return { error: `Failed to create submission: ${error.message}` }
   }
 
   revalidatePath("/my")

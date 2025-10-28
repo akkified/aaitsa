@@ -126,7 +126,7 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <Button asChild variant="link" className="p-0 h-auto text-primary">
-                  <Link href="/competitions">
+                  <Link href="/resources">
                     View Competitions <ArrowRight className="ml-1 h-4 w-4" />
                   </Link>
                 </Button>

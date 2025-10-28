@@ -136,11 +136,16 @@ export default function SubmitPage() {
       formData.append("title", title)
       formData.append("category", category)
       formData.append("description", description)
-      formData.append("submissionGroup", submissionGroup)
-      formData.append("checkInDate", checkInDate)
+      
+      // Only add optional fields if they have values (these columns may not exist yet)
+      if (submissionGroup) {
+        formData.append("submissionGroup", submissionGroup)
+      }
+      if (checkInDate) {
+        formData.append("checkInDate", checkInDate)
+      }
       if (fileUrl) {
         formData.append("fileUrl", fileUrl)
-        formData.append("fileName", file?.name || "")
       }
 
       const result = await createSubmission(formData)

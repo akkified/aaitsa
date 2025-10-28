@@ -240,7 +240,7 @@ Our chapter competes at regional, state, and national levels in various technolo
                 <CardDescription>Explore all TSA competition categories and requirements</CardDescription>
               </CardHeader>
               <CardContent>
-                <Link href="/competitions" className="text-primary hover:underline">
+                <Link href="/resources" className="text-primary hover:underline">
                   View Competitions →
                 </Link>
               </CardContent>
