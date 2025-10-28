@@ -43,10 +43,15 @@ export default function ReviewSubmissionPage() {
     }
 
     const getSubmission = async () => {
-      const { data, error } = await supabase.from("submissions").select("*").eq("id", params.id).single()
+      const { data, error } = await supabase
+        .from("submissions")
+        .select("*")
+        .eq("id", params.id)
+        .single()
 
       if (error) {
         console.error("Error fetching submission:", error)
+        alert(`Error: ${error.message}`)
         return
       }
 

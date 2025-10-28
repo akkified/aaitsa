@@ -53,11 +53,15 @@ export default function AdminDashboardPage() {
 
         setProfile(profile)
 
-        // Fetch submissions
-        const { data: submissions } = await supabase
+        // Fetch submissions - using the admin RLS policy
+        const { data: submissions, error: submissionsError } = await supabase
           .from("submissions")
           .select("*")
           .order("submitted_at", { ascending: false })
+
+        if (submissionsError) {
+          console.error("Error fetching submissions:", submissionsError)
+        }
 
         const submissionsWithProfiles = await Promise.all(
           (submissions || []).map(async (submission) => {
