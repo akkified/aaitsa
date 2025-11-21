@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, BookOpen, Users, Mail, Trophy, Lightbulb, User } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
+import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
 
 interface AboutContent {
   id: string
@@ -38,28 +40,7 @@ export default async function AboutPage() {
   const contactEmailContent = getContent("contact_email")
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <Trophy className="w-7 h-7 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Alliance Academy TSA</h1>
-              <p className="text-sm text-muted-foreground">Technology Student Association</p>
-            </div>
-          </div>
-          <nav className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="ghost">Home</Button>
-            </Link>
-            <Link href="/my">
-              <Button variant="default">Student Portal</Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero Section */}
       <section className="py-20">
@@ -160,58 +141,7 @@ Our chapter competes at regional, state, and national levels in various technolo
         </div>
       </section>
 
-      {/* Upcoming Events */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h3 className="text-3xl font-bold text-foreground mb-8 text-center">Upcoming Events</h3>
-          <div className="max-w-3xl mx-auto space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex items-start gap-4">
-                  <Calendar className="w-6 h-6 text-primary mt-1" />
-                  <div>
-                    <CardTitle>Regional Competition</CardTitle>
-                    <CardDescription className="mt-2">
-                      Join us for the regional TSA competition featuring coding, engineering, and design challenges.
-                    </CardDescription>
-                    <p className="text-sm text-muted-foreground mt-2">Date: TBA</p>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-start gap-4">
-                  <Calendar className="w-6 h-6 text-primary mt-1" />
-                  <div>
-                    <CardTitle>State Conference</CardTitle>
-                    <CardDescription className="mt-2">
-                      Compete at the state level and qualify for nationals. Multiple competition categories available.
-                    </CardDescription>
-                    <p className="text-sm text-muted-foreground mt-2">Date: TBA</p>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-start gap-4">
-                  <Calendar className="w-6 h-6 text-primary mt-1" />
-                  <div>
-                    <CardTitle>Chapter Meetings</CardTitle>
-                    <CardDescription className="mt-2">
-                      Weekly meetings to work on projects, prepare for competitions, and learn new skills.
-                    </CardDescription>
-                    <p className="text-sm text-muted-foreground mt-2">Every week during school year</p>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Resources */}
       <section className="py-16">
@@ -297,12 +227,10 @@ Our chapter competes at regional, state, and national levels in various technolo
         </div>
       </section>
 
+      
+
       {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>© {new Date().getFullYear()} Alliance Academy TSA Chapter. All rights reserved.</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

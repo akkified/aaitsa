@@ -1,8 +1,13 @@
+"use client"
+
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { BookOpen, Download, ExternalLink, ArrowLeft, FileText, Users, Target, Award, Upload, Trophy } from "lucide-react"
+import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
+import { Download, ExternalLink, ArrowLeft, FileText, Users, Target, Award, Upload, Calendar, Trophy, ChevronLeft, ChevronRight } from "lucide-react"
 
 export default function ResourcesPage() {
   const competitionResources = [
@@ -174,33 +179,57 @@ export default function ResourcesPage() {
     },
   ]
 
+  // Example events keyed by ISO date. Replace with real data source as needed.
+  const eventsByDate: Record<string, Array<{ label: string; color: string }>> = {
+    "2025-11-20": [
+      { label: "November Chapter Meeting", color: "bg-blue-500" },
+    ],
+    
+  }
+
+  // Calendar state and helpers
+  const [currentDate, setCurrentDate] = useState<Date>(new Date())
+
+  const { monthName, year, weeks } = useMemo(() => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth() // 0-based
+    const firstOfMonth = new Date(year, month, 1)
+    const startWeekday = firstOfMonth.getDay() // 0 = Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+    const days: Array<Date | null> = []
+    // Leading blanks
+    for (let i = 0; i < startWeekday; i++) days.push(null)
+    // Actual days
+    for (let d = 1; d <= daysInMonth; d++) days.push(new Date(year, month, d))
+    // Chunk into weeks of 7
+    const weeks: Array<Array<Date | null>> = []
+    for (let i = 0; i < days.length; i += 7) {
+      weeks.push(days.slice(i, i + 7))
+    }
+
+    const monthName = new Intl.DateTimeFormat(undefined, { month: "long" }).format(firstOfMonth)
+    return { monthName, year, weeks }
+  }, [currentDate])
+
+  const goPrevMonth = () => {
+    setCurrentDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1))
+  }
+  const goNextMonth = () => {
+    setCurrentDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1))
+  }
+
+  const toIso = (date: Date) => {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, "0")
+    const dd = String(date.getDate()).padStart(2, "0")
+    return `${y}-${m}-${dd}`
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <BookOpen className="w-7 h-7 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Alliance Academy TSA</h1>
-              <p className="text-sm text-muted-foreground">Technology Student Association</p>
-            </div>
-          </div>
-          <nav className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="ghost">Home</Button>
-            </Link>
-            <Link href="/about">
-              <Button variant="ghost">About</Button>
-            </Link>
-            <Link href="/my">
-              <Button variant="default">Student Portal</Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary/10 via-accent/5 to-background py-20">
@@ -285,53 +314,6 @@ export default function ResourcesPage() {
         </div>
       </section>
 
-      {/* Competition Resources by Category */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-2xl font-bold text-foreground mb-4">Competition Themes & Resources</h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Download theme PDFs and resources for each competition. Upload your own materials through the admin
-              portal.
-            </p>
-          </div>
-
-          <div className="space-y-12">
-            {competitionResources.map((categoryGroup, categoryIndex) => (
-              <div key={categoryIndex}>
-                <div className="flex items-center gap-3 mb-6">
-                  <Target className="h-6 w-6 text-primary" />
-                  <h4 className="text-xl font-semibold text-foreground">{categoryGroup.category}</h4>
-                  <Badge variant="outline">{categoryGroup.competitions.length} Competitions</Badge>
-                </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {categoryGroup.competitions.map((competition, compIndex) => (
-                    <Card key={compIndex} className="h-full">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <CardTitle className="text-sm leading-tight">{competition}</CardTitle>
-                          <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-2">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Upload className="h-3 w-3" />
-                          <span>Theme PDF placeholder</span>
-                        </div>
-                        <Button variant="outline" size="sm" className="w-full bg-transparent" disabled>
-                          <Download className="h-3 w-3 mr-1" />
-                          Not Available
-                        </Button>
-                        <p className="text-xs text-muted-foreground italic">Upload PDF through admin portal</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Detailed Competition Information */}
       <section className="py-16 bg-card">
@@ -386,50 +368,71 @@ export default function ResourcesPage() {
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="py-16">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-2xl mx-auto">
-            <Award className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-foreground mb-4">Ready to Compete?</h3>
-            <p className="text-muted-foreground mb-6">
-              Join our chapter and participate in these exciting competitions. Develop your skills, work with talented peers, and compete at regional, state, and national levels.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg">
-                <Link href="/auth/signup">Join Our Chapter</Link>
+
+
+      {/* Calendar Section */}
+      <section className="py-20 bg-card">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <Calendar className="w-12 h-12 text-primary mx-auto mb-4" />
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Button variant="outline" size="icon" onClick={goPrevMonth} aria-label="Previous month">
+                <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="lg" asChild>
-                <Link href="/my/submit">Submit Your Entry</Link>
+              <h3 className="text-3xl font-bold text-foreground">
+                {monthName} {year}
+              </h3>
+              <Button variant="outline" size="icon" onClick={goNextMonth} aria-label="Next month">
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
+            <p className="text-lg text-muted-foreground">Upcoming TSA events and workdays</p>
+          </div>
+          <div className="max-w-4xl mx-auto">
+            <Card>
+              <CardContent className="p-8">
+                <div className="grid grid-cols-7 gap-4 text-center">
+                  <div className="font-semibold">Sun</div>
+                  <div className="font-semibold">Mon</div>
+                  <div className="font-semibold">Tue</div>
+                  <div className="font-semibold">Wed</div>
+                  <div className="font-semibold">Thu</div>
+                  <div className="font-semibold">Fri</div>
+                  <div className="font-semibold">Sat</div>
+
+                  {/* Calendar grid (weeks × 7) */}
+                  {weeks.flatMap((week, wi) =>
+                    week.map((date, di) => {
+                      if (!date) {
+                        return <div key={`empty-${wi}-${di}`} className="p-2 rounded min-h-[60px] text-transparent">.</div>
+                      }
+                      const iso = toIso(date)
+                      const events = eventsByDate[iso] || []
+                      return (
+                        <div key={iso} className="p-2 rounded text-foreground/80">
+                          <div className="text-sm mb-1">{date.getDate()}</div>
+                          <div className="flex flex-col items-center gap-1 min-h-[16px]">
+                            {events.map((evt, idx) => (
+                              <div key={idx} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span className={`inline-block h-2 w-2 rounded-full ${evt.color}`}></span>
+                                <span className="truncate max-w-[80px]">{evt.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* Admin Upload Notice */}
-      <section className="py-16 bg-card">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-2xl mx-auto">
-            <Upload className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-foreground mb-4">Upload Competition Resources</h3>
-            <p className="text-muted-foreground mb-6">
-              Chapter administrators can upload theme PDFs and other resources for each competition through the admin
-              portal. Students will be able to access these materials here.
-            </p>
-            <Button asChild size="lg">
-              <Link href="/admin">Go to Admin Portal</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>© {new Date().getFullYear()} Alliance Academy TSA Chapter. All rights reserved.</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

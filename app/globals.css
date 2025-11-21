@@ -4,76 +4,40 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Light mode - Alliance Academy blue and Georgia TSA yellow/red */
+  /* Bright red and blue light theme only - removed dark mode */
   --background: #ffffff;
-  --foreground: #1f2937;
+  --foreground: #1a1a2e;
   --card: #f8fafc;
-  --card-foreground: #1f2937;
+  --card-foreground: #1a1a2e;
   --popover: #ffffff;
-  --popover-foreground: #1f2937;
-  --primary: #1e40af;
+  --popover-foreground: #1a1a2e;
+  --primary: #2563eb; /* Bright blue */
   --primary-foreground: #ffffff;
-  --secondary: #fbbf24;
-  --secondary-foreground: #1f2937;
+  --secondary: #eff6ff; /* Light blue background */
+  --secondary-foreground: #1e40af;
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
-  --accent: #dc2626;
+  --accent: #dc2626; /* Bright red */
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --border: #e2e8f0;
   --input: #ffffff;
-  --ring: rgba(30, 64, 175, 0.3);
-  --chart-1: #1e40af;
-  --chart-2: #fbbf24;
-  --chart-3: #dc2626;
-  --chart-4: #059669;
-  --chart-5: #7c3aed;
+  --ring: rgba(37, 99, 235, 0.3);
+  --chart-1: #2563eb;
+  --chart-2: #dc2626;
+  --chart-3: #1d4ed8;
+  --chart-4: #ef4444;
+  --chart-5: #3b82f6;
   --radius: 0.5rem;
   --sidebar: #f8fafc;
-  --sidebar-foreground: #1f2937;
-  --sidebar-primary: #1e40af;
+  --sidebar-foreground: #1a1a2e;
+  --sidebar-primary: #2563eb;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #fbbf24;
-  --sidebar-accent-foreground: #1f2937;
+  --sidebar-accent: #dc2626;
+  --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: rgba(30, 64, 175, 0.3);
-}
-
-.dark {
-  /* Enhanced dark theme with rich, appealing colors */
-  --background: #0a0f1e; /* Deep navy background for richness */
-  --foreground: #e8edf5; /* Soft white for excellent readability */
-  --card: #141b2e; /* Elevated card surface */
-  --card-foreground: #e8edf5;
-  --popover: #0f1729;
-  --popover-foreground: #e8edf5;
-  --primary: #4f8fff; /* Vibrant electric blue that pops */
-  --primary-foreground: #0a0f1e;
-  --secondary: #ffd93d; /* Bright golden yellow for energy */
-  --secondary-foreground: #0a0f1e;
-  --muted: #1a2235; /* Subtle muted surface */
-  --muted-foreground: #8b95ab; /* Softer muted text */
-  --accent: #ff5757; /* Vivid red accent */
-  --accent-foreground: #ffffff;
-  --destructive: #ff5757;
-  --destructive-foreground: #ffffff;
-  --border: #1f2937; /* Subtle borders */
-  --input: #141b2e; /* Input fields match cards */
-  --ring: rgba(79, 143, 255, 0.4); /* Glowing blue focus ring */
-  --chart-1: #4f8fff;
-  --chart-2: #ffd93d;
-  --chart-3: #ff5757;
-  --chart-4: #22d3ee; /* Cyan for variety */
-  --chart-5: #a78bfa; /* Purple for variety */
-  --sidebar: #0f1729; /* Darker sidebar for depth */
-  --sidebar-foreground: #e8edf5;
-  --sidebar-primary: #4f8fff;
-  --sidebar-primary-foreground: #0a0f1e;
-  --sidebar-accent: #ffd93d;
-  --sidebar-accent-foreground: #0a0f1e;
-  --sidebar-border: #1f2937;
-  --sidebar-ring: rgba(79, 143, 255, 0.4);
+  --sidebar-ring: rgba(37, 99, 235, 0.3);
 }
 
 @theme inline {
