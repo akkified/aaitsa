@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { ArrowLeft, Upload, X } from "lucide-react"
 import { createSubmission } from "@/app/actions/submissions"
+import { SiteHeader } from "@/components/site-header"
 
 const TSA_CATEGORIES = [
   "Architectural Design",
@@ -136,8 +137,7 @@ export default function SubmitPage() {
       formData.append("title", title)
       formData.append("category", category)
       formData.append("description", description)
-      
-      // Only add optional fields if they have values (these columns may not exist yet)
+
       if (submissionGroup) {
         formData.append("submissionGroup", submissionGroup)
       }
@@ -167,12 +167,14 @@ export default function SubmitPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card/50 backdrop-blur-sm">
+    <div className="min-h-screen bg-neutral-100">
+      <SiteHeader />
+
+      <header className="border-b bg-white/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <Link
             href="/my"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+            className="inline-flex items-center text-sm text-neutral-600 hover:text-[#2563eb] transition-colors font-medium"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
@@ -184,7 +186,7 @@ export default function SubmitPage() {
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">New Submission</CardTitle>
+              <CardTitle className="text-2xl">Submit a Project</CardTitle>
               <CardDescription>
                 Submit your TSA competition entry for review by chapter officers and advisors.
               </CardDescription>
@@ -241,7 +243,7 @@ export default function SubmitPage() {
                     <Input
                       id="submissionGroup"
                       name="submissionGroup"
-                      placeholder="e.g., Q1 2024, Spring Competition, etc."
+                      placeholder="e.g., Q1 2024, Spring Competition"
                       autoComplete="off"
                       value={submissionGroup}
                       onChange={(e) => setSubmissionGroup(e.target.value)}
@@ -262,10 +264,10 @@ export default function SubmitPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="file">Project File (Optional)</Label>
-                  <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                  <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center">
                     {!file ? (
                       <>
-                        <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                        <Upload className="h-8 w-8 text-neutral-400 mx-auto mb-2" />
                         <div className="space-y-2">
                           <Input
                             id="file"
@@ -276,44 +278,46 @@ export default function SubmitPage() {
                             onChange={handleFileChange}
                             className="max-w-xs mx-auto"
                           />
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-neutral-500">
                             Accepted formats: PDF, DOC, DOCX, PPT, PPTX, ZIP, RAR (Max 10MB)
                           </p>
                         </div>
                       </>
                     ) : (
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 bg-muted rounded-md">
+                        <div className="flex items-center justify-between p-3 bg-neutral-100 rounded-md">
                           <div className="flex-1 text-left">
-                            <p className="text-sm font-medium">{file.name}</p>
-                            <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            <p className="text-sm font-medium text-neutral-900">{file.name}</p>
+                            <p className="text-xs text-neutral-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                           </div>
                           <Button type="button" variant="ghost" size="sm" onClick={handleRemoveFile} className="ml-2">
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
                         {uploadProgress > 0 && uploadProgress < 100 && (
-                          <div className="w-full bg-muted rounded-full h-2">
+                          <div className="w-full bg-neutral-200 rounded-full h-2">
                             <div
-                              className="bg-primary h-2 rounded-full transition-all"
+                              className="bg-[#2563eb] h-2 rounded-full transition-all"
                               style={{ width: `${uploadProgress}%` }}
                             />
                           </div>
                         )}
-                        {uploadProgress === 100 && <p className="text-xs text-green-600">✓ Upload complete</p>}
+                        {uploadProgress === 100 && <p className="text-xs text-[#16a34a]">✓ Upload complete</p>}
                       </div>
                     )}
                   </div>
                 </div>
 
                 {error && (
-                  <div className="p-3 text-sm text-destructive-foreground bg-destructive/10 border border-destructive/20 rounded-md">
-                    {error}
-                  </div>
+                  <div className="p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md">{error}</div>
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button type="submit" className="flex-1" disabled={isLoading}>
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-[#2563eb] hover:bg-[#1e40af] text-white"
+                    disabled={isLoading}
+                  >
                     {isLoading ? "Submitting..." : "Submit Project"}
                   </Button>
                   <Button type="button" variant="outline" asChild>

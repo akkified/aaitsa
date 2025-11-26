@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
-import { Users, FileText, Clock, CheckCircle, XCircle, User, Shield, ArrowUpDown } from "lucide-react"
+import { Users, FileText, Clock, CheckCircle, XCircle, User, Shield } from "lucide-react"
 import { LogoutButton } from "@/components/logout-button"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
@@ -171,18 +171,18 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm">
+      <header className="border-b bg-white/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link href="/" className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold">AA</span>
+                  <span className="text-white font-bold">AA</span>
                 </div>
                 <span className="font-semibold">TSA Admin</span>
               </Link>
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/about">About</Link>
+                <Link href="/">Home</Link>
               </Button>
             </div>
             <div className="flex items-center space-x-4">
@@ -227,7 +227,9 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
-                  <p className="text-2xl font-bold">{submissionsWithProfiles?.filter((s) => s.status === "pending").length || 0}</p>
+                  <p className="text-2xl font-bold">
+                    {submissionsWithProfiles?.filter((s) => s.status === "pending").length || 0}
+                  </p>
                 </div>
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
@@ -316,19 +318,19 @@ export default function AdminDashboardPage() {
                 {/* Group submissions by submission_group */}
                 {Object.entries(
                   sortedSubmissions.slice(0, 20).reduce((groups: Record<string, any[]>, submission) => {
-                    const groupKey = submission.submission_group || 'Ungrouped'
+                    const groupKey = submission.submission_group || "Ungrouped"
                     if (!groups[groupKey]) {
                       groups[groupKey] = []
                     }
                     groups[groupKey].push(submission)
                     return groups
-                  }, {})
+                  }, {}),
                 ).map(([groupName, groupSubmissions]) => (
                   <div key={groupName}>
                     <h4 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
                       {groupName}
                       <Badge variant="outline" className="text-xs">
-                        {groupSubmissions.length} submission{groupSubmissions.length !== 1 ? 's' : ''}
+                        {groupSubmissions.length} submission{groupSubmissions.length !== 1 ? "s" : ""}
                       </Badge>
                     </h4>
                     <div className="space-y-3 ml-4">

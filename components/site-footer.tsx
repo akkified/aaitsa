@@ -1,56 +1,94 @@
 import Link from "next/link"
+import { Mail, MapPin } from "lucide-react"
 
 export function SiteFooter() {
+  const currentYear = new Date().getFullYear()
+
   return (
-    <footer className="bg-[#1c4587] text-white mt-auto">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-3 gap-8 mb-6">
+    <footer className="w-full bg-[#0b2b58] text-white py-20">
+      <div className="container mx-auto px-4">
+        <div className="grid md:grid-cols-4 gap-12 mb-12">
+          {/* About */}
           <div>
-            <h3 className="font-bold text-lg mb-3">AAI TSA</h3>
-            <p className="text-sm text-blue-100">
-              Alliance Academy International Technology Student Association Chapter
-            </p>
-            <p className="text-sm text-blue-100 mt-2">
-              Empowering students through technology, innovation, and leadership.
+            <h3 className="font-bold mb-4 text-lg">AAI TSA</h3>
+            <p className="text-white/70 text-sm leading-relaxed">
+              Alliance Academy International Technology Student Association chapter dedicated to innovation and
+              excellence in STEM education.
             </p>
           </div>
+
+          {/* Navigation */}
           <div>
-            <h4 className="font-semibold mb-3">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
+            <h4 className="font-semibold mb-4">Navigation</h4>
+            <ul className="space-y-2">
+              {[
+                { href: "/", label: "Home" },
+                { href: "/resources", label: "Resources" },
+                { href: "/team", label: "Team" },
+                { href: "/contact", label: "Contact" },
+              ].map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="text-white/70 hover:text-white text-sm transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h4 className="font-semibold mb-4">General Sources</h4>
+            <ul className="space-y-2">
               <li>
-                <Link href="/resources" className="text-blue-100 hover:text-white transition-colors">
-                  Resources
-                </Link>
+                <a
+                  href="https://tsaweb.org/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/70 hover:text-white text-sm transition-colors"
+                >
+                  National TSA
+                </a>
               </li>
               <li>
-                <Link href="/gallery" className="text-blue-100 hover:text-white transition-colors">
-                  Gallery
-                </Link>
+                <a
+                  href="https://gatsa.org/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/70 hover:text-white text-sm transition-colors"
+                >
+                  Georgia TSA
+                </a>
               </li>
               <li>
-                <Link href="/team" className="text-blue-100 hover:text-white transition-colors">
-                  Team
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-blue-100 hover:text-white transition-colors">
-                  Contact
+                <Link href="/my" className="text-white/70 hover:text-white text-sm transition-colors">
+                  Student Portal
                 </Link>
               </li>
             </ul>
           </div>
+
+          {/* Contact */}
           <div>
-            <h4 className="font-semibold mb-3">School Info</h4>
-            <p className="text-sm text-blue-100">
-              Alliance Academy
-              <br />
-              Cumming, Georgia, USA
-            </p>
-            <p className="text-sm text-blue-100 mt-4">Website designed by Akhil Akella and Akshara Chunduri</p>
+            <h4 className="font-semibold mb-4">Contact</h4>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-white/70 text-sm">
+                <Mail className="h-4 w-4 flex-shrink-0" />
+                <span>tsa@alliance.edu</span>
+              </div>
+              <div className="flex items-center gap-2 text-white/70 text-sm">
+                <MapPin className="h-4 w-4 flex-shrink-0" />
+                <span>Cumming, Georgia</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="border-t border-blue-400 pt-6 text-center text-sm text-blue-100">
-          <p>© {new Date().getFullYear()} Alliance Academy TSA Chapter. All rights reserved.</p>
+
+        <div className="border-t border-white/10 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white/60">
+            <p>&copy; {currentYear} Alliance Academy TSA. All rights reserved.</p>
+            <p>Designed by Alliance Academy TSA Members</p>
+          </div>
         </div>
       </div>
     </footer>

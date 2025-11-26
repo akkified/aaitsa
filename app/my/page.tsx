@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Plus, FileText, Clock, CheckCircle, XCircle, User } from "lucide-react"
-import { LogoutButton } from "@/components/logout-button"
+import { SiteHeader } from "@/components/site-header"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -60,30 +60,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold">AA</span>
-                </div>
-                <span className="font-semibold">TSA Portal</span>
-              </Link>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/about">About</Link>
-              </Button>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{profile?.full_name || data.user.email}</span>
-              </div>
-              <LogoutButton />
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
