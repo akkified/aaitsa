@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { ArrowLeft, FileText, Download, Clock, CheckCircle, XCircle } from "lucide-react"
+import { ArrowLeft, FileText, Download, Clock, CheckCircle, XCircle, Terminal, Activity, History } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
+import { cn } from "@/lib/utils"
 
 interface SubmissionPageProps {
   params: {
@@ -18,40 +19,29 @@ interface SubmissionPageProps {
 export default function SubmissionPage({ params }: SubmissionPageProps) {
   const [submission, setSubmission] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
+    setMounted(true)
     const getUserAndSubmission = async () => {
       try {
-        // Get current user
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser()
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
 
         if (userError || !user) {
           router.push("/auth/login")
           return
         }
 
-        setUser(user)
-
-        // Get submission
         const { data, error } = await supabase
           .from("submissions")
           .select("*")
           .eq("id", params.id)
-          .eq("user_id", user.id) // Ensure user can only see their own submissions
+          .eq("user_id", user.id)
           .single()
 
-        if (error) {
-          console.error("Error fetching submission:", error)
-          setSubmission(null)
-        } else {
-          setSubmission(data)
-        }
+        if (!error) setSubmission(data)
       } catch (error) {
         console.error("Error:", error)
       } finally {
@@ -62,160 +52,147 @@ export default function SubmissionPage({ params }: SubmissionPageProps) {
     getUserAndSubmission()
   }, [params.id, router, supabase])
 
+  if (!mounted) return null
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
-            <h2 className="text-lg font-semibold mb-2">Loading...</h2>
-            <p className="text-muted-foreground">Fetching submission details</p>
-          </CardContent>
-        </Card>
+        <div className="text-center">
+          <Activity className="h-10 w-10 text-primary mx-auto mb-4 animate-spin" />
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground italic">Decrypting Data...</h2>
+        </div>
       </div>
     )
   }
 
   if (!submission) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-lg font-semibold mb-2">Submission Not Found</h2>
-            <p className="text-muted-foreground mb-4">The submission you're looking for doesn't exist or you don't have permission to view it.</p>
-            <Button asChild>
-              <Link href="/my">Return to Dashboard</Link>
-            </Button>
-          </CardContent>
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <Card className="w-full max-w-md border-border bg-card rounded-[2rem] p-8 text-center">
+          <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">Access Denied</h2>
+          <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest mb-8">Submission ID not found in current sector.</p>
+          <Button asChild className="rounded-full bg-primary text-white font-black uppercase text-[10px] tracking-widest px-8">
+            <Link href="/my">Return to Dashboard</Link>
+          </Button>
         </Card>
       </div>
     )
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "approved":
-        return <CheckCircle className="h-4 w-4 text-green-600" />
-      case "rejected":
-        return <XCircle className="h-4 w-4 text-red-600" />
-      default:
-        return <Clock className="h-4 w-4 text-yellow-600" />
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "approved":
-        return "bg-green-100 text-green-800 border-green-200"
-      case "rejected":
-        return "bg-red-100 text-red-800 border-red-200"
-      default:
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+  const getStatusStyles = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "approved": return "border-primary/50 bg-primary/10 text-primary"
+      case "rejected": return "border-destructive/50 bg-destructive/10 text-destructive"
+      default: return "border-yellow-500/50 bg-yellow-500/10 text-yellow-500"
     }
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/my">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Link>
-            </Button>
-            <div className="flex items-center space-x-2">
-              <FileText className="h-5 w-5" />
-              <h1 className="text-xl font-semibold">Submission Details</h1>
-            </div>
+    <div className="min-h-screen bg-background text-foreground pb-20">
+      {/* Terminal Header */}
+      <header className="border-b border-border/40 bg-background/95 backdrop-blur-md sticky top-0 z-50">
+        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+          <Link
+            href="/my"
+            className="group inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            Terminal Output
+          </Link>
+          <div className="flex items-center gap-2">
+            <Terminal className="h-4 w-4 text-primary" />
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest opacity-50">Entry ID: {submission.id.slice(0, 8)}</span>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="space-y-6">
-          {/* Submission Info */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-2xl">{submission.title}</CardTitle>
-                  <CardDescription className="mt-2">{submission.description}</CardDescription>
-                </div>
-                <Badge className={`${getStatusColor(submission.status)} border`}>
-                  <span className="flex items-center space-x-1">
-                    {getStatusIcon(submission.status)}
-                    <span className="capitalize">{submission.status}</span>
-                  </span>
-                </Badge>
-              </div>
+      <div className="container mx-auto px-6 py-12 max-w-4xl">
+        <div className="space-y-8">
+          
+          {/* Main Info Block */}
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+            <div className="space-y-2">
+              <Badge className={cn("px-4 py-1 rounded-full border text-[10px] font-black uppercase tracking-[0.2em]", getStatusStyles(submission.status))}>
+                {submission.status}
+              </Badge>
+              <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none">
+                {submission.title}
+              </h1>
+              <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest">
+                // Category: {submission.category}
+              </p>
+            </div>
+            
+            <div className="p-4 bg-secondary/30 border border-border rounded-2xl flex items-center gap-4">
+               <History className="h-5 w-5 text-primary" />
+               <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Logged On</p>
+                  <p className="text-xs font-bold font-mono">{new Date(submission.submitted_at).toLocaleDateString()}</p>
+               </div>
+            </div>
+          </div>
+
+          <Card className="border-border bg-card rounded-[2.5rem] overflow-hidden">
+            <CardHeader className="p-8 border-b border-border/50 bg-secondary/10">
+              <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-primary">Technical Brief</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-muted-foreground">Category:</span>
-                  <p>{submission.category}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-muted-foreground">Submitted:</span>
-                  <p>{new Date(submission.submitted_at).toLocaleDateString()}</p>
-                </div>
-              </div>
+            <CardContent className="p-8">
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed font-medium">
+                {submission.description}
+              </p>
             </CardContent>
           </Card>
 
-          {/* Files */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Submitted Files</CardTitle>
-              <CardDescription>Documents and files included with this submission</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {submission.file_url ? (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <FileText className="h-8 w-8 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{submission.file_url.split('/').pop() || 'Submitted File'}</p>
-                        <p className="text-sm text-muted-foreground">Click to download</p>
+          {/* Files Sector */}
+          <div className="space-y-4">
+             <h3 className="text-sm font-black uppercase tracking-[0.2em] ml-2 italic">Attached Assets</h3>
+             <Card className="border-border bg-card rounded-[2.5rem] overflow-hidden">
+                <CardContent className="p-4">
+                  {submission.file_url ? (
+                    <div className="flex flex-col sm:flex-row items-center justify-between p-6 border border-border rounded-3xl hover:border-primary/50 transition-colors group">
+                      <div className="flex items-center gap-4 mb-4 sm:mb-0">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                           <FileText className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-black uppercase tracking-tight">Documentation_Archive.zip</p>
+                          <p className="text-[10px] font-mono text-muted-foreground uppercase">External Source Node</p>
+                        </div>
                       </div>
+                      <Button 
+                        variant="default" 
+                        size="sm"
+                        className="rounded-full bg-primary text-white font-black uppercase text-[10px] tracking-widest px-8 group-hover:scale-105 transition-transform"
+                        onClick={() => window.open(submission.file_url, '_blank')}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => window.open(submission.file_url, '_blank')}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No files attached to this submission</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                  ) : (
+                    <div className="text-center py-12">
+                      <FileText className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">No Binary Assets Attached</p>
+                    </div>
+                  )}
+                </CardContent>
+             </Card>
+          </div>
 
-          {/* Feedback */}
+          {/* Feedback Sector */}
           {submission.feedback && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Feedback</CardTitle>
-                <CardDescription>Comments from the review team</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <p>{submission.feedback}</p>
+            <div className="space-y-4">
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] ml-2 italic text-primary">Officer Feedback</h3>
+              <div className="p-8 bg-primary/5 border border-primary/20 rounded-[2.5rem] relative overflow-hidden">
+                <div className="relative z-10">
+                  <p className="text-sm md:text-base font-bold leading-relaxed italic">
+                    "{submission.feedback}"
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+                <Terminal className="absolute right-[-20px] bottom-[-20px] h-32 w-32 text-primary opacity-[0.03]" />
+              </div>
+            </div>
           )}
         </div>
       </div>

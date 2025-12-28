@@ -1,10 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -12,45 +11,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { ArrowLeft, Upload, X } from "lucide-react"
+import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle } from "lucide-react"
 import { createSubmission } from "@/app/actions/submissions"
-import { SiteHeader } from "@/components/site-header"
+import { cn } from "@/lib/utils"
 
+// Updated to match your specific Resources list
 const TSA_CATEGORIES = [
-  "Architectural Design",
-  "Biotechnology Design",
-  "Board Game Design",
-  "CAD Engineering",
-  "Children's Stories",
-  "Coding",
-  "Computer Science",
-  "Construction Challenge",
-  "Cybersecurity",
-  "Data Science & Analytics",
-  "Debating Technological Issues",
-  "Digital Photography",
-  "Dragster Design",
-  "Engineering Design",
-  "Essays on Technology",
-  "Fashion Design & Technology",
-  "Flight Endurance",
-  "Forensic Science",
-  "Game Design",
-  "Geospatial Technology",
-  "Graphic Design",
-  "Manufacturing Prototype",
-  "Music Production",
-  "On Demand Video",
-  "Promotional Design",
-  "Software Development",
-  "Structural Design & Engineering",
-  "System Control Technology",
-  "Technology Bowl",
-  "Technology Problem Solving",
-  "Transportation Modeling",
-  "Video Game Design",
-  "Webmaster",
-]
+  "Animatronics", "Architectural Design", "Audio Podcasting", "Biotechnology Design", 
+  "Board Game Design", "Chapter Team", "Children’s Stories", "Coding", 
+  "CAD, Architecture", "CAD, Engineering", "Cybersecurity", "Data Science and Analytics", 
+  "Debating Technical Issues", "Digital Video Production", "Dragster Design", 
+  "Drone Challenge", "Engineering Design", "Extemporaneous Speech", 
+  "Fashion Design and Technology", "Flight Endurance", "Forensic Science", 
+  "Future Technology and Engineering Teacher", "Geospatial Technology", 
+  "Manufacturing Prototype", "Music Production", "On Demand Video", 
+  "Photographic Technology", "Prepared Presentation", "Promotional Design", 
+  "Robotics", "Senior Solar Sprint", "Software Development", "Stem Mass Media", 
+  "Structural Design and Engineering", "System Control Technology", 
+  "Technology Bowl", "Technology Problem Solving", "Transportation Modeling", 
+  "Video Game Design", "Virtual Reality Simulation (VR)", "Webmaster"
+].sort()
 
 export default function SubmitPage() {
   const [title, setTitle] = useState("")
@@ -64,14 +44,13 @@ export default function SubmitPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
+  
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
     const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         router.push("/auth/login")
       } else {
@@ -86,7 +65,7 @@ export default function SubmitPage() {
     if (!selectedFile) return
 
     if (selectedFile.size > 10 * 1024 * 1024) {
-      setError("File size must be less than 10MB")
+      setError("FILE SIZE EXCEEDS 10MB LIMIT")
       return
     }
 
@@ -94,26 +73,22 @@ export default function SubmitPage() {
     setError(null)
 
     try {
-      setUploadProgress(10)
+      setUploadProgress(20)
       const formData = new FormData()
       formData.append("file", selectedFile)
 
-      setUploadProgress(50)
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       })
 
-      setUploadProgress(80)
-      if (!response.ok) {
-        throw new Error("Upload failed")
-      }
+      if (!response.ok) throw new Error("UPLOAD FAILED")
 
       const data = await response.json()
       setFileUrl(data.url)
       setUploadProgress(100)
     } catch (error) {
-      setError("Failed to upload file. Please try again.")
+      setError("FILE UPLOAD ERROR. ATTEMPT RECOVERY.")
       setFile(null)
       setUploadProgress(0)
     }
@@ -137,85 +112,79 @@ export default function SubmitPage() {
       formData.append("title", title)
       formData.append("category", category)
       formData.append("description", description)
-
-      if (submissionGroup) {
-        formData.append("submissionGroup", submissionGroup)
-      }
-      if (checkInDate) {
-        formData.append("checkInDate", checkInDate)
-      }
-      if (fileUrl) {
-        formData.append("fileUrl", fileUrl)
-      }
+      if (submissionGroup) formData.append("submissionGroup", submissionGroup)
+      if (checkInDate) formData.append("checkInDate", checkInDate)
+      if (fileUrl) formData.append("fileUrl", fileUrl)
 
       const result = await createSubmission(formData)
-
-      if (result.error) {
-        throw new Error(result.error)
-      }
+      if (result.error) throw new Error(result.error)
 
       router.push("/my")
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+    } catch (error: any) {
+      setError(error.message || "SUBMISSION PROTOCOL FAILURE")
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (!user) {
-    return <div>Loading...</div>
-  }
+  if (!user) return <div className="min-h-screen bg-background" />
 
   return (
-    <div className="min-h-screen bg-neutral-100">
-      <SiteHeader />
-
-      <header className="border-b bg-white/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
+    <div className="min-h-screen bg-background text-foreground pb-20">
+      
+      {/* Navigation Header */}
+      <header className="border-b border-border/40 bg-background/95 backdrop-blur-md sticky top-0 z-50">
+        <div className="container mx-auto px-6 h-16 flex items-center">
           <Link
             href="/my"
-            className="inline-flex items-center text-sm text-neutral-600 hover:text-[#2563eb] transition-colors font-medium"
+            className="group inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
+            <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            Return to Terminal
           </Link>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Submit a Project</CardTitle>
-              <CardDescription>
-                Submit your TSA competition entry for review by chapter officers and advisors.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Project Title</Label>
+      <div className="container mx-auto px-6 py-12">
+        <div className="max-w-3xl mx-auto">
+          
+          <div className="mb-10">
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none mb-4">
+              Project <span className="text-primary italic">Entry.</span>
+            </h1>
+            <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest border-l-2 border-primary pl-4">
+              // LOGGING NEW SUBMISSION FOR OFFICIAL REVIEW
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <Card className="border-border bg-card rounded-[2rem] overflow-hidden shadow-2xl shadow-primary/5">
+              <CardHeader className="p-8 pb-4">
+                <CardTitle className="text-sm font-black uppercase tracking-[0.2em] text-primary">Core Metadata</CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 pt-0 space-y-6">
+                
+                <div className="space-y-3">
+                  <Label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest ml-1">Project Title</Label>
                   <Input
                     id="title"
-                    name="title"
-                    type="text"
-                    placeholder="Enter your project title"
-                    autoComplete="off"
+                    className="bg-secondary/30 border-border rounded-xl h-12 focus:ring-primary uppercase font-bold text-xs"
+                    placeholder="E.G. AUTONOMOUS ROVER V1"
                     required
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="category">Competition Category</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="category" className="text-[10px] font-black uppercase tracking-widest ml-1">Competition Category</Label>
                   <Select value={category} onValueChange={setCategory} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a TSA competition category" />
+                    <SelectTrigger className="bg-secondary/30 border-border rounded-xl h-12 font-bold text-xs uppercase">
+                      <SelectValue placeholder="SELECT CATEGORY" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-card border-border uppercase font-bold text-[10px]">
                       {TSA_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
+                        <SelectItem key={cat} value={cat} className="focus:bg-primary focus:text-white">
                           {cat}
                         </SelectItem>
                       ))}
@@ -223,110 +192,116 @@ export default function SubmitPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">Project Description</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest ml-1">Documentation / Description</Label>
                   <Textarea
                     id="description"
-                    name="description"
-                    placeholder="Describe your project, methodology, and key features..."
-                    autoComplete="off"
-                    rows={4}
+                    className="bg-secondary/30 border-border rounded-2xl min-h-[150px] focus:ring-primary font-medium text-sm leading-relaxed"
+                    placeholder="Detail your methodology, software stack, or engineering principles..."
                     required
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
                 </div>
+              </CardContent>
+            </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="submissionGroup">Submission Group (Optional)</Label>
+            <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
+              <CardHeader className="p-8 pb-4">
+                <CardTitle className="text-sm font-black uppercase tracking-[0.2em] text-primary">Assets & Scheduling</CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 pt-0 space-y-8">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="submissionGroup" className="text-[10px] font-black uppercase tracking-widest ml-1">Group (Optional)</Label>
                     <Input
                       id="submissionGroup"
-                      name="submissionGroup"
-                      placeholder="e.g., Q1 2024, Spring Competition"
-                      autoComplete="off"
+                      className="bg-secondary/30 border-border rounded-xl h-12 uppercase font-bold text-xs"
+                      placeholder="SPRING 2026"
                       value={submissionGroup}
                       onChange={(e) => setSubmissionGroup(e.target.value)}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="checkInDate">Check-in Date (Optional)</Label>
+                  <div className="space-y-3">
+                    <Label htmlFor="checkInDate" className="text-[10px] font-black uppercase tracking-widest ml-1">Check-in Date</Label>
                     <Input
                       id="checkInDate"
-                      name="checkInDate"
                       type="date"
-                      autoComplete="off"
+                      className="bg-secondary/30 border-border rounded-xl h-12 font-bold text-xs uppercase invert-calendar-icon"
                       value={checkInDate}
                       onChange={(e) => setCheckInDate(e.target.value)}
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="file">Project File (Optional)</Label>
-                  <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center">
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-widest ml-1">Technical Documentation (MAX 10MB)</Label>
+                  <div className={cn(
+                    "relative border-2 border-dashed rounded-3xl p-10 transition-all duration-300 flex flex-col items-center justify-center",
+                    file ? "border-primary/50 bg-primary/5" : "border-border hover:border-primary/30 bg-secondary/10"
+                  )}>
                     {!file ? (
                       <>
-                        <Upload className="h-8 w-8 text-neutral-400 mx-auto mb-2" />
-                        <div className="space-y-2">
-                          <Input
-                            id="file"
-                            name="file"
-                            type="file"
-                            accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.rar"
-                            autoComplete="off"
-                            onChange={handleFileChange}
-                            className="max-w-xs mx-auto"
-                          />
-                          <p className="text-xs text-neutral-500">
-                            Accepted formats: PDF, DOC, DOCX, PPT, PPTX, ZIP, RAR (Max 10MB)
-                          </p>
-                        </div>
+                        <Upload className="h-10 w-10 text-muted-foreground mb-4 group-hover:text-primary" />
+                        <Input
+                          id="file"
+                          type="file"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={handleFileChange}
+                          accept=".pdf,.doc,.docx,.ppt,.pptx,.zip"
+                        />
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Click to Upload Documentation</p>
+                        <p className="text-[9px] text-muted-foreground mt-2 uppercase">PDF, ZIP, PPTX supported</p>
                       </>
                     ) : (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 bg-neutral-100 rounded-md">
-                          <div className="flex-1 text-left">
-                            <p className="text-sm font-medium text-neutral-900">{file.name}</p>
-                            <p className="text-xs text-neutral-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                      <div className="w-full space-y-4">
+                        <div className="flex items-center justify-between p-4 bg-background border border-border rounded-2xl">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-primary/20 p-2 rounded-lg">
+                              <CheckCircle2 className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-black uppercase tracking-tight truncate max-w-[200px]">{file.name}</p>
+                              <p className="text-[10px] font-mono text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            </div>
                           </div>
-                          <Button type="button" variant="ghost" size="sm" onClick={handleRemoveFile} className="ml-2">
+                          <Button type="button" variant="ghost" size="icon" onClick={handleRemoveFile} className="hover:bg-destructive/10 hover:text-destructive">
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
                         {uploadProgress > 0 && uploadProgress < 100 && (
-                          <div className="w-full bg-neutral-200 rounded-full h-2">
-                            <div
-                              className="bg-[#2563eb] h-2 rounded-full transition-all"
-                              style={{ width: `${uploadProgress}%` }}
-                            />
+                          <div className="w-full bg-secondary h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-primary h-full transition-all duration-500" style={{ width: `${uploadProgress}%` }} />
                           </div>
                         )}
-                        {uploadProgress === 100 && <p className="text-xs text-[#16a34a]">✓ Upload complete</p>}
                       </div>
                     )}
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                {error && (
-                  <div className="p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md">{error}</div>
-                )}
+            {error && (
+              <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-2xl text-destructive text-xs font-bold uppercase tracking-widest">
+                <AlertCircle className="h-4 w-4" />
+                {error}
+              </div>
+            )}
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button
-                    type="submit"
-                    className="flex-1 bg-[#2563eb] hover:bg-[#1e40af] text-white"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Submitting..." : "Submit Project"}
-                  </Button>
-                  <Button type="button" variant="outline" asChild>
-                    <Link href="/my">Cancel</Link>
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button
+                type="submit"
+                className="flex-1 h-16 rounded-full bg-primary text-white font-black uppercase tracking-widest text-xs hover:scale-[1.02] transition-transform shadow-xl shadow-primary/20"
+                disabled={isLoading}
+              >
+                {isLoading ? "INITIALIZING SUBMISSION..." : "Finalize Project Submission"}
+              </Button>
+              <Button type="button" variant="outline" asChild className="h-16 px-10 rounded-full font-black uppercase tracking-widest text-[10px]">
+                <Link href="/my">Abort</Link>
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

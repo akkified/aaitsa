@@ -1,411 +1,211 @@
 "use client"
 
+import { useState, useMemo, useEffect } from "react"
+import Link from "next/link"
+import { 
+  Trophy, Users, Lightbulb, BookOpen, Award, 
+  ArrowRight, ChevronLeft, ChevronRight, Shield, Activity, Globe
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import Link from "next/link"
-import { Trophy, Users, Lightbulb, BookOpen, Award, ArrowRight, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
-import { useState, useMemo, useEffect } from "react"
 
 export default function HomePage() {
-  const [currentDate, setCurrentDate] = useState<Date>(new Date(2025, 9))
-  const [heroOpacity, setHeroOpacity] = useState(1)
-
-  const goPrevMonth = () => {
-    setCurrentDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1))
-  }
-  const goNextMonth = () => {
-    setCurrentDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1))
-  }
-
+  const [mounted, setMounted] = useState(false)
+  const [currentDate, setCurrentDate] = useState(new Date())
+  
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY
-      const heroHeight = 500
-      const opacity = Math.max(0, 1 - scrollY / heroHeight)
-      setHeroOpacity(opacity)
-    }
-
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+    setMounted(true)
+    setCurrentDate(new Date())
   }, [])
 
-  const { monthName, year, weeks } = useMemo(() => {
+  const goPrevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
+  const goNextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
+
+  const calendarData = useMemo(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
     const firstOfMonth = new Date(year, month, 1)
-    const startWeekday = firstOfMonth.getDay()
     const daysInMonth = new Date(year, month + 1, 0).getDate()
+    const startWeekday = firstOfMonth.getDay()
 
-    const days: Array<Date | null> = []
-    for (let i = 0; i < startWeekday; i++) days.push(null)
+    const days: (Date | null)[] = Array(startWeekday).fill(null)
     for (let d = 1; d <= daysInMonth; d++) days.push(new Date(year, month, d))
-
-    const weeks: Array<Array<Date | null>> = []
-    for (let i = 0; i < days.length; i += 7) {
-      weeks.push(days.slice(i, i + 7))
+    
+    return {
+      monthName: firstOfMonth.toLocaleString('default', { month: 'long' }),
+      year,
+      days
     }
-
-    const monthName = new Intl.DateTimeFormat(undefined, { month: "long" }).format(firstOfMonth)
-    return { monthName, year, weeks }
   }, [currentDate])
 
-  const eventsByDate: Record<string, string> = {
-    "2025-10-20": "TSA Workday",
+  const events = { 
+    "2025-10-20": "Technical Workshop", 
+    "2025-12-28": "State Project Review" 
   }
 
-  const toIso = (date: Date) => {
-    const y = date.getFullYear()
-    const m = String(date.getMonth() + 1).padStart(2, "0")
-    const dd = String(date.getDate()).padStart(2, "0")
-    return `${y}-${m}-${dd}`
-  }
+  if (!mounted) return <div className="min-h-screen bg-background" />
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <SiteHeader />
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
 
-      {/* Hero Section with Fade - TSA Blue Background */}
-      <section
-        id="hero"
-        className="relative h-[500px] bg-gradient-to-br from-[#2057a0] via-[#2563eb] to-[#1e3a8a] text-white overflow-hidden flex items-center transition-opacity duration-300"
-        style={{ opacity: heroOpacity }}
-      >
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0 bg-[url('/tsa-ctso-day-technology-conference.jpg')] bg-cover bg-center" />
-        </div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-5xl md:text-7xl font-bold mb-4 text-balance">AAI TSA</h1>
-            <p className="text-lg md:text-2xl text-white/90 mb-6 text-pretty">
-              Alliance Academy International Technology Student Association
-            </p>
-            <p className="text-base md:text-lg text-white/80 mb-8 max-w-xl mx-auto">
-              Blah blah the good info (why are we important?) CTSO stuff
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
-                <Link href="/resources">Explore Competitions</Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white/10 bg-transparent"
-              >
-                <Link href="/gallery">View Gallery</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Intro Section - AAI TSA Info */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="mb-8">
-            <h2 className="text-4xl font-bold mb-6">AAI TSA</h2>
-            <div className="space-y-6 text-lg text-neutral-700 leading-relaxed">
-              <p>Blah blah the good info (why are we important?) CTSO stuff. The why join TSA part is good.</p>
-              <div className="space-y-4">
-                <h3 className="text-2xl font-semibold">Why Join TSA?</h3>
-                <ul className="space-y-3">
-                  <li className="flex gap-3">
-                    <Lightbulb className="w-6 h-6 text-[#2563eb] flex-shrink-0 mt-0.5" />
-                    <span>Develop creative solutions through hands-on projects and real-world problem solving</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <Trophy className="w-6 h-6 text-[#2563eb] flex-shrink-0 mt-0.5" />
-                    <span>Compete at regional, state, and national conferences in 39+ different events</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <Users className="w-6 h-6 text-[#2563eb] flex-shrink-0 mt-0.5" />
-                    <span>Build teamwork and leadership skills that prepare you for future success</span>
-                  </li>
-                </ul>
+      {/* Hero Section */}
+      <section className="relative pt-24 lg:pt-40 pb-20 overflow-hidden">
+        {/* Subtle Gradient Overlay */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
+        
+        <div className="container px-6 relative z-10 mx-auto">
+          <div className="flex flex-col lg:flex-row gap-16 items-start">
+            <div className="lg:w-full max-w-5xl">
+              <div className="inline-flex items-center gap-3 mb-8 group cursor-default">
+                <Shield className="w-4 h-4 text-primary" />
+                <span className="text-[10px] font-black tracking-[0.4em] text-muted-foreground uppercase">
+                  Technology Student Association
+                </span>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
+              
+              <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-10 uppercase">
+                Engineering the <br />
+                <span className="text-primary italic font-light italic">Next Standard.</span>
+              </h1>
 
-      {/* Explore Our Chapter - 3 Cards */}
-      <section className="py-20 bg-neutral-100">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-neutral-900 mb-4">Explore Our Chapter</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Competitions Card */}
-            <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden border border-neutral-200">
-              <div className="p-8 flex flex-col h-full">
-                <Trophy className="w-12 h-12 text-[#2563eb] mb-4" />
-                <h3 className="text-2xl font-bold text-neutral-900 mb-3">Competitions</h3>
-                <p className="text-neutral-600 mb-8 flex-1">
-                  Explore 39+ TSA competition categories across engineering, technology, digital media, and leadership
-                  events.
-                </p>
-                <Button
-                  asChild
-                  className="w-full bg-[#2563eb] hover:bg-[#1e40af] text-white py-3 text-base font-semibold"
-                >
-                  <Link href="/resources" className="flex items-center justify-center gap-2">
-                    Learn More <ArrowRight className="h-5 w-5" />
-                  </Link>
+              <div className="flex flex-col md:flex-row gap-10 items-start md:items-center border-t border-border pt-10">
+                <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-none px-12 h-16 text-xs font-black tracking-widest uppercase transition-all shadow-xl shadow-primary/20">
+                  <Link href="/resources">Access Registry</Link>
                 </Button>
-              </div>
-            </div>
-
-            {/* Gallery Card */}
-            <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden border border-neutral-200">
-              <div className="p-8 flex flex-col h-full">
-                <Award className="w-12 h-12 text-[#2563eb] mb-4" />
-                <h3 className="text-2xl font-bold text-neutral-900 mb-3">Picture Gallery</h3>
-                <p className="text-neutral-600 mb-8 flex-1">
-                  View our achievements, events, and memorable moments from competitions and chapter activities
-                  throughout the year.
-                </p>
-                <Button
-                  asChild
-                  className="w-full bg-[#2563eb] hover:bg-[#1e40af] text-white py-3 text-base font-semibold"
-                >
-                  <Link href="/gallery" className="flex items-center justify-center gap-2">
-                    View Gallery <ArrowRight className="h-5 w-5" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-            {/* Resources Card */}
-            <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden border border-neutral-200">
-              <div className="p-8 flex flex-col h-full">
-                <BookOpen className="w-12 h-12 text-[#2563eb] mb-4" />
-                <h3 className="text-2xl font-bold text-neutral-900 mb-3">Resources</h3>
-                <p className="text-neutral-600 mb-8 flex-1">
-                  Access competition guidelines, learning materials, and helpful resources for all events and
-                  categories.
-                </p>
-                <Button
-                  asChild
-                  className="w-full bg-[#2563eb] hover:bg-[#1e40af] text-white py-3 text-base font-semibold"
-                >
-                  <Link href="/resources" className="flex items-center justify-center gap-2">
-                    View Resources <ArrowRight className="h-5 w-5" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* About Us Link */}
-          <div className="text-center mt-12">
-            <Button asChild variant="outline" size="lg">
-              <Link href="/team">About Us & Team</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Calendar Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <h2 className="text-4xl font-bold text-center mb-12">October Calendar</h2>
-
-          <Card className="border-neutral-200">
-            <CardContent className="p-6">
-              {/* Month Navigation */}
-              <div className="flex items-center justify-between mb-8">
-                <button
-                  onClick={goPrevMonth}
-                  className="p-2 hover:bg-neutral-100 rounded transition-colors"
-                  aria-label="Previous month"
-                >
-                  <ChevronLeft className="h-5 w-5 text-neutral-700" />
-                </button>
-                <h3 className="text-xl font-bold text-center flex-1">
-                  {monthName} {year}
-                </h3>
-                <button
-                  onClick={goNextMonth}
-                  className="p-2 hover:bg-neutral-100 rounded transition-colors"
-                  aria-label="Next month"
-                >
-                  <ChevronRight className="h-5 w-5 text-neutral-700" />
-                </button>
-              </div>
-
-              {/* Calendar Grid */}
-              <div className="space-y-3">
-                {/* Weekday Header */}
-                <div className="grid grid-cols-7 gap-2 mb-2">
-                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                    <div
-                      key={day}
-                      className="text-center font-bold text-sm text-neutral-600 py-2 border-b border-neutral-200"
-                    >
-                      {day}
-                    </div>
-                  ))}
+                
+                <div className="grid grid-cols-2 gap-10">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest">Global Status</p>
+                    <p className="text-sm font-bold font-mono">2025 COMPETITIVE CYCLE</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest">Regional Node</p>
+                    <p className="text-sm font-bold font-mono">GA-ALLIANCE ACADEMY</p>
+                  </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-                {/* Days Grid */}
-                {weeks.map((week, weekIdx) => (
-                  <div key={weekIdx} className="grid grid-cols-7 gap-2">
-                    {week.map((date, dayIdx) => {
-                      const iso = date ? toIso(date) : ""
-                      const hasEvent = iso && eventsByDate[iso]
-                      return (
-                        <div
-                          key={dayIdx}
-                          className={`aspect-square flex flex-col items-center justify-center rounded-lg border-2 text-sm font-medium transition-all ${
-                            !date
-                              ? "bg-neutral-50 border-transparent"
-                              : hasEvent
-                                ? "bg-[#2563eb]/10 border-[#2563eb] text-neutral-900"
-                                : "bg-white border-neutral-200 hover:border-[#2563eb]/50"
-                          }`}
-                        >
-                          {date && (
-                            <>
-                              <div className="text-base font-bold">{date.getDate()}</div>
-                              {hasEvent && (
-                                <div className="text-xs font-bold text-[#b0272d] mt-1 text-center px-1 line-clamp-1">
-                                  Event
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      )
-                    })}
+      {/* Corporate Bento Grid */}
+      <section className="py-20 border-t border-border/50 bg-secondary/10">
+        <div className="container px-6 mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-6 md:grid-rows-2 gap-6">
+            <div className="md:col-span-4 md:row-span-2 bg-card border border-border p-12 relative overflow-hidden group">
+              <div className="relative z-10">
+                <div className="flex items-center gap-4 mb-8">
+                  <Globe className="w-8 h-8 text-primary" />
+                  <div className="h-px w-12 bg-border" />
+                </div>
+                <h3 className="text-4xl font-black mb-6 tracking-tighter uppercase">National Event Directory</h3>
+                <p className="text-muted-foreground max-w-md mb-10 leading-relaxed text-sm font-medium">
+                  Review the technical specifications for all 40 competitive events. From Aerospace to Web Technologies, find your domain of expertise.
+                </p>
+                <Link href="/resources" className="inline-flex items-center text-[11px] font-black uppercase tracking-widest text-primary border-b-2 border-primary pb-1 hover:text-foreground hover:border-foreground transition-all">
+                  Review Rubrics & Guidelines <ArrowRight className="ml-2 w-3 h-3" />
+                </Link>
+              </div>
+              <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-primary/5 to-transparent" />
+            </div>
+
+            <div className="md:col-span-2 bg-primary p-8 flex flex-col justify-between group cursor-pointer overflow-hidden relative">
+              <Users className="w-8 h-8 text-white/50 group-hover:scale-110 transition-transform" />
+              <div>
+                <h3 className="text-xl font-black text-white uppercase tracking-tight">Executive Board</h3>
+                <p className="text-white/70 text-xs mt-2 font-mono tracking-tighter italic">// View Chapter Officers</p>
+              </div>
+              <div className="absolute -bottom-4 -right-4 opacity-10">
+                 <Shield className="w-32 h-32" />
+              </div>
+            </div>
+
+            <div className="md:col-span-1 bg-card border border-border p-6 flex flex-col justify-center items-center group hover:bg-primary transition-colors">
+              <Activity className="w-5 h-5 text-primary group-hover:text-white mb-2" />
+              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-white text-center">Workshops</span>
+            </div>
+
+            <div className="md:col-span-1 bg-card border border-border p-6 flex flex-col justify-center items-center group hover:bg-primary transition-colors">
+              <Award className="w-5 h-5 text-primary group-hover:text-white mb-2" />
+              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-white text-center">Honors</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Schedule / Benchmarks Section */}
+      <section className="py-24 relative border-t border-border/50">
+        <div className="container px-6 mx-auto">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 mb-6 text-primary">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Active Milestones</span>
+              </div>
+              <h2 className="text-5xl font-black tracking-tighter mb-8 uppercase leading-tight">Chapter <br /> <span className="text-primary italic font-light">Benchmarks.</span></h2>
+              <div className="space-y-3">
+                {Object.entries(events).map(([date, title]) => (
+                  <div key={date} className="flex justify-between items-center p-6 border border-border hover:border-primary transition-all group">
+                    <span className="font-bold uppercase tracking-tight group-hover:text-primary transition-colors">{title}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground bg-secondary px-3 py-1">{date}</span>
                   </div>
                 ))}
               </div>
+            </div>
 
-              {/* Event Legend */}
-              <div className="mt-6 pt-6 border-t border-neutral-200">
-                <p className="text-sm font-semibold text-neutral-900 mb-3">Upcoming Events:</p>
-                <div className="space-y-2">
-                  {Object.entries(eventsByDate).map(([date, event]) => (
-                    <div key={date} className="text-sm text-neutral-600 flex items-center gap-2">
-                      <span className="w-2 h-2 bg-[#b0272d] rounded-full flex-shrink-0"></span>
-                      {event} - {date}
-                    </div>
-                  ))}
+            <Card className="bg-card border-border shadow-2xl rounded-none overflow-hidden">
+              <div className="p-8 border-b border-border flex justify-between items-center bg-secondary/20">
+                <h3 className="font-black uppercase tracking-[0.2em] text-xs">{calendarData.monthName} // {calendarData.year}</h3>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" onClick={goPrevMonth} className="h-8 w-8 rounded-none border border-border"><ChevronLeft className="w-4 h-4"/></Button>
+                  <Button variant="ghost" size="icon" onClick={goNextMonth} className="h-8 w-8 rounded-none border border-border"><ChevronRight className="w-4 h-4"/></Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Map Section */}
-      <section className="py-20 bg-neutral-100">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <h2 className="text-3xl font-bold text-center mb-8">Our Location</h2>
-          <Card className="border-neutral-200 overflow-hidden">
-            <div className="w-full h-96 bg-neutral-200 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="w-16 h-16 text-[#2563eb] mx-auto mb-4 opacity-50" />
-                <p className="text-neutral-600">
-                  <a
-                    href="https://maps.google.com/?q=Alliance+Academy+International,+Cumming,+GA"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#2563eb] hover:underline font-medium"
-                  >
-                    View on Google Maps
-                  </a>
-                </p>
-                <p className="text-sm text-neutral-600 mt-2">Cumming, Georgia</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </section>
-
-      {/* Newsletter Section - Prominent */}
-      <section className="py-32 bg-[#2563eb] text-white">
-        <div className="container mx-auto px-4 max-w-2xl text-center">
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-balance">Check Out Our Weekly Newsletter!</h2>
-          <p className="text-lg text-white/90 mb-12">
-            Stay updated with chapter news, competition deadlines, and event announcements.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 max-w-xs px-6 py-4 rounded-lg bg-white text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#b0272d]"
-            />
-            <Button className="bg-[#b0272d] hover:bg-[#8b1e22] text-white px-8 py-4 text-lg font-semibold rounded-lg h-auto">
-              Newsletter
-            </Button>
+              <CardContent className="p-8">
+                <div className="grid grid-cols-7 gap-1">
+                  {['S','M','T','W','T','F','S'].map((day, idx) => (
+                    <div key={`weekday-${idx}`} className="text-center text-[9px] font-black text-muted-foreground pb-6 uppercase tracking-widest">{day}</div>
+                  ))}
+                  {calendarData.days.map((date, i) => {
+                    const today = date && date.toDateString() === new Date().toDateString();
+                    return (
+                      <div 
+                        key={`date-${i}`} 
+                        className={`aspect-square flex items-center justify-center text-xs transition-all border border-transparent ${
+                          today 
+                          ? 'bg-primary text-white font-black' 
+                          : 'text-foreground hover:border-primary hover:text-primary'
+                        }`}
+                      >
+                        {date?.getDate()}
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* Quick Links & General Sources */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Quick Links & General Sources</h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div>
-              <h3 className="text-xl font-bold mb-6 text-[#2563eb]">General Sources</h3>
-              <ul className="space-y-3">
-                <li>
-                  <a
-                    href="https://tsaweb.org/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-neutral-600 hover:text-[#2563eb] transition-colors font-medium"
-                  >
-                    • National TSA Official Website
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://gatsa.org/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-neutral-600 hover:text-[#2563eb] transition-colors font-medium"
-                  >
-                    • Georgia TSA Resources
-                  </a>
-                </li>
-                <li>
-                  <a href="/resources" className="text-neutral-600 hover:text-[#2563eb] transition-colors font-medium">
-                    • Competition Rules & Guidelines
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold mb-6 text-[#2563eb]">Chapter Links</h3>
-              <ul className="space-y-3">
-                <li>
-                  <a href="/gallery" className="text-neutral-600 hover:text-[#2563eb] transition-colors font-medium">
-                    • Gallery & Achievements
-                  </a>
-                </li>
-                <li>
-                  <a href="/team" className="text-neutral-600 hover:text-[#2563eb] transition-colors font-medium">
-                    • Meet Our Team
-                  </a>
-                </li>
-                <li>
-                  <a href="/my" className="text-neutral-600 hover:text-[#2563eb] transition-colors font-medium">
-                    • Student Portal
-                  </a>
-                </li>
-              </ul>
-            </div>
+      {/* Newsletter / CTA */}
+      <section className="py-32 border-t border-border">
+        <div className="container px-6 mx-auto">
+          <div className="bg-card border border-border p-12 md:p-24 text-center relative overflow-hidden">
+            <h2 className="text-5xl md:text-7xl font-black text-foreground mb-8 relative z-10 tracking-tighter uppercase italic">Stay Integrated.</h2>
+            <p className="text-muted-foreground mb-12 max-w-lg mx-auto relative z-10 font-mono text-sm uppercase tracking-tight">Technical updates and competition advisories transmitted via chapter registry.</p>
+            <form className="flex flex-col md:flex-row gap-0 max-w-2xl mx-auto relative z-10" onSubmit={e => e.preventDefault()}>
+              <input 
+                className="flex-1 bg-secondary/50 border border-border px-8 py-5 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary" 
+                placeholder="STUDENT_ID@FORSYTH.K12.GA.US" 
+              />
+              <Button className="bg-primary text-white rounded-none px-12 h-auto text-xs font-black tracking-[0.2em] uppercase transition-all hover:bg-blue-700">SUBMIT_APPLICATION</Button>
+            </form>
           </div>
         </div>
       </section>
 
-      <SiteFooter />
     </div>
   )
 }
