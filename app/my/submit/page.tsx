@@ -3,7 +3,7 @@
 import type React from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -11,11 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle } from "lucide-react"
+import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle, ShieldCheck } from "lucide-react"
 import { createSubmission } from "@/app/actions/submissions"
 import { cn } from "@/lib/utils"
 
-// Updated to match your specific Resources list
 const TSA_CATEGORIES = [
   "Animatronics", "Architectural Design", "Audio Podcasting", "Biotechnology Design", 
   "Board Game Design", "Chapter Team", "Children’s Stories", "Coding", 
@@ -87,7 +86,7 @@ export default function SubmitPage() {
       const data = await response.json()
       setFileUrl(data.url)
       setUploadProgress(100)
-    } catch (error) {
+    } catch (err) {
       setError("FILE UPLOAD ERROR. ATTEMPT RECOVERY.")
       setFile(null)
       setUploadProgress(0)
@@ -120,8 +119,8 @@ export default function SubmitPage() {
       if (result.error) throw new Error(result.error)
 
       router.push("/my")
-    } catch (error: any) {
-      setError(error.message || "SUBMISSION PROTOCOL FAILURE")
+    } catch (err: any) {
+      setError(err.message || "SUBMISSION PROTOCOL FAILURE")
     } finally {
       setIsLoading(false)
     }
@@ -131,8 +130,6 @@ export default function SubmitPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
-      
-      {/* Navigation Header */}
       <header className="border-b border-border/40 bg-background/95 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-6 h-16 flex items-center">
           <Link
@@ -147,28 +144,30 @@ export default function SubmitPage() {
 
       <div className="container mx-auto px-6 py-12">
         <div className="max-w-3xl mx-auto">
-          
           <div className="mb-10">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none mb-4">
-              Project <span className="text-primary italic">Entry.</span>
+            <div className="flex items-center gap-2 mb-4">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              <span className="text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground italic">Project Transmission Module</span>
+            </div>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none mb-4 italic">
+              Entry <span className="text-primary not-italic">Protocol.</span>
             </h1>
-            <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest border-l-2 border-primary pl-4">
-              // LOGGING NEW SUBMISSION FOR OFFICIAL REVIEW
+            <p className="text-muted-foreground font-mono text-[10px] uppercase tracking-widest font-bold border-l-2 border-primary pl-4">
+              // LOGGING NEW SUBMISSION FOR OFFICIAL CHAPTER REVIEW
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <Card className="border-border bg-card rounded-[2rem] overflow-hidden shadow-2xl shadow-primary/5">
-              <CardHeader className="p-8 pb-4">
-                <CardTitle className="text-sm font-black uppercase tracking-[0.2em] text-primary">Core Metadata</CardTitle>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Card className="border-border bg-card rounded-none overflow-hidden shadow-2xl">
+              <CardHeader className="p-8 pb-4 bg-secondary/20 border-b border-border">
+                <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">01 // Metadata Registration</CardTitle>
               </CardHeader>
-              <CardContent className="p-8 pt-0 space-y-6">
-                
+              <CardContent className="p-8 space-y-6">
                 <div className="space-y-3">
-                  <Label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest ml-1">Project Title</Label>
+                  <Label htmlFor="title" className="text-[9px] font-black uppercase tracking-widest ml-1">Project Title</Label>
                   <Input
                     id="title"
-                    className="bg-secondary/30 border-border rounded-xl h-12 focus:ring-primary uppercase font-bold text-xs"
+                    className="bg-secondary/30 border-border rounded-none h-14 focus:ring-0 focus:border-primary uppercase font-bold text-xs"
                     placeholder="E.G. AUTONOMOUS ROVER V1"
                     required
                     value={title}
@@ -177,14 +176,14 @@ export default function SubmitPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="category" className="text-[10px] font-black uppercase tracking-widest ml-1">Competition Category</Label>
+                  <Label htmlFor="category" className="text-[9px] font-black uppercase tracking-widest ml-1">Competition Category</Label>
                   <Select value={category} onValueChange={setCategory} required>
-                    <SelectTrigger className="bg-secondary/30 border-border rounded-xl h-12 font-bold text-xs uppercase">
+                    <SelectTrigger className="bg-secondary/30 border-border rounded-none h-14 font-bold text-xs uppercase">
                       <SelectValue placeholder="SELECT CATEGORY" />
                     </SelectTrigger>
-                    <SelectContent className="bg-card border-border uppercase font-bold text-[10px]">
+                    <SelectContent className="bg-card border-border uppercase font-bold text-[10px] rounded-none">
                       {TSA_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat} className="focus:bg-primary focus:text-white">
+                        <SelectItem key={cat} value={cat} className="focus:bg-primary focus:text-white rounded-none">
                           {cat}
                         </SelectItem>
                       ))}
@@ -193,10 +192,10 @@ export default function SubmitPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest ml-1">Documentation / Description</Label>
+                  <Label htmlFor="description" className="text-[9px] font-black uppercase tracking-widest ml-1">Engineering Description</Label>
                   <Textarea
                     id="description"
-                    className="bg-secondary/30 border-border rounded-2xl min-h-[150px] focus:ring-primary font-medium text-sm leading-relaxed"
+                    className="bg-secondary/30 border-border rounded-none min-h-[150px] focus:ring-0 focus:border-primary font-medium text-sm leading-relaxed"
                     placeholder="Detail your methodology, software stack, or engineering principles..."
                     required
                     value={description}
@@ -206,29 +205,28 @@ export default function SubmitPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
-              <CardHeader className="p-8 pb-4">
-                <CardTitle className="text-sm font-black uppercase tracking-[0.2em] text-primary">Assets & Scheduling</CardTitle>
+            <Card className="border-border bg-card rounded-none overflow-hidden shadow-2xl">
+              <CardHeader className="p-8 pb-4 bg-secondary/20 border-b border-border">
+                <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">02 // Assets & Documentation</CardTitle>
               </CardHeader>
-              <CardContent className="p-8 pt-0 space-y-8">
-                
+              <CardContent className="p-8 space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <Label htmlFor="submissionGroup" className="text-[10px] font-black uppercase tracking-widest ml-1">Group (Optional)</Label>
+                    <Label htmlFor="submissionGroup" className="text-[9px] font-black uppercase tracking-widest ml-1">Group Identifier</Label>
                     <Input
                       id="submissionGroup"
-                      className="bg-secondary/30 border-border rounded-xl h-12 uppercase font-bold text-xs"
+                      className="bg-secondary/30 border-border rounded-none h-14 uppercase font-bold text-xs"
                       placeholder="SPRING 2026"
                       value={submissionGroup}
                       onChange={(e) => setSubmissionGroup(e.target.value)}
                     />
                   </div>
                   <div className="space-y-3">
-                    <Label htmlFor="checkInDate" className="text-[10px] font-black uppercase tracking-widest ml-1">Check-in Date</Label>
+                    <Label htmlFor="checkInDate" className="text-[9px] font-black uppercase tracking-widest ml-1">Check-in Date</Label>
                     <Input
                       id="checkInDate"
                       type="date"
-                      className="bg-secondary/30 border-border rounded-xl h-12 font-bold text-xs uppercase invert-calendar-icon"
+                      className="bg-secondary/30 border-border rounded-none h-14 font-bold text-xs uppercase"
                       value={checkInDate}
                       onChange={(e) => setCheckInDate(e.target.value)}
                     />
@@ -236,42 +234,44 @@ export default function SubmitPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest ml-1">Technical Documentation (MAX 10MB)</Label>
+                  <Label className="text-[9px] font-black uppercase tracking-widest ml-1">Upload PDF/ZIP Documentation (MAX 10MB)</Label>
                   <div className={cn(
-                    "relative border-2 border-dashed rounded-3xl p-10 transition-all duration-300 flex flex-col items-center justify-center",
-                    file ? "border-primary/50 bg-primary/5" : "border-border hover:border-primary/30 bg-secondary/10"
+                    "relative border-2 border-dashed rounded-none p-12 transition-all duration-300 flex flex-col items-center justify-center min-h-[180px]",
+                    file ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 bg-secondary/10"
                   )}>
                     {!file ? (
                       <>
-                        <Upload className="h-10 w-10 text-muted-foreground mb-4 group-hover:text-primary" />
-                        <Input
-                          id="file"
+                        <input
+                          id="file-upload"
                           type="file"
-                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                           onChange={handleFileChange}
                           accept=".pdf,.doc,.docx,.ppt,.pptx,.zip"
                         />
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Click to Upload Documentation</p>
-                        <p className="text-[9px] text-muted-foreground mt-2 uppercase">PDF, ZIP, PPTX supported</p>
+                        <div className="flex flex-col items-center justify-center pointer-events-none z-10">
+                          <Upload className="h-10 w-10 text-muted-foreground mb-4 opacity-50" />
+                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Click to initialize upload</p>
+                          <p className="text-[8px] text-muted-foreground/60 mt-2 uppercase font-mono tracking-tighter">System accepts: .PDF .ZIP .PPTX</p>
+                        </div>
                       </>
                     ) : (
-                      <div className="w-full space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-background border border-border rounded-2xl">
-                          <div className="flex items-center gap-3">
-                            <div className="bg-primary/20 p-2 rounded-lg">
-                              <CheckCircle2 className="h-5 w-5 text-primary" />
+                      <div className="w-full space-y-4 relative z-30">
+                        <div className="flex items-center justify-between p-5 bg-card border border-border">
+                          <div className="flex items-center gap-4">
+                            <div className="bg-primary p-2">
+                              <CheckCircle2 className="h-5 w-5 text-white" />
                             </div>
-                            <div>
-                              <p className="text-xs font-black uppercase tracking-tight truncate max-w-[200px]">{file.name}</p>
-                              <p className="text-[10px] font-mono text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            <div className="overflow-hidden">
+                              <p className="text-[10px] font-black uppercase tracking-tight truncate max-w-[150px] md:max-w-[300px] italic">{file.name}</p>
+                              <p className="text-[8px] font-mono text-muted-foreground uppercase">Payload: {(file.size / 1024 / 1024).toFixed(2)} MB</p>
                             </div>
                           </div>
-                          <Button type="button" variant="ghost" size="icon" onClick={handleRemoveFile} className="hover:bg-destructive/10 hover:text-destructive">
+                          <Button type="button" variant="ghost" size="icon" onClick={handleRemoveFile} className="hover:bg-destructive/10 hover:text-destructive shrink-0">
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
                         {uploadProgress > 0 && uploadProgress < 100 && (
-                          <div className="w-full bg-secondary h-1.5 rounded-full overflow-hidden">
+                          <div className="w-full bg-secondary h-1 rounded-none overflow-hidden">
                             <div className="bg-primary h-full transition-all duration-500" style={{ width: `${uploadProgress}%` }} />
                           </div>
                         )}
@@ -283,22 +283,22 @@ export default function SubmitPage() {
             </Card>
 
             {error && (
-              <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-2xl text-destructive text-xs font-bold uppercase tracking-widest">
+              <div className="flex items-center gap-3 p-5 bg-destructive text-white rounded-none text-[10px] font-black uppercase tracking-widest italic animate-pulse">
                 <AlertCircle className="h-4 w-4" />
-                {error}
+                Error: {error}
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
               <Button
                 type="submit"
-                className="flex-1 h-16 rounded-full bg-primary text-white font-black uppercase tracking-widest text-xs hover:scale-[1.02] transition-transform shadow-xl shadow-primary/20"
+                className="flex-1 h-16 rounded-none bg-primary text-white font-black uppercase tracking-widest text-[11px] hover:bg-blue-700 transition-all shadow-xl shadow-primary/20"
                 disabled={isLoading}
               >
-                {isLoading ? "INITIALIZING SUBMISSION..." : "Finalize Project Submission"}
+                {isLoading ? "PROCESSSING TRANSMISSION..." : "Execute Final Submission"}
               </Button>
-              <Button type="button" variant="outline" asChild className="h-16 px-10 rounded-full font-black uppercase tracking-widest text-[10px]">
-                <Link href="/my">Abort</Link>
+              <Button type="button" variant="outline" asChild className="h-16 px-12 rounded-none font-black uppercase tracking-widest text-[10px] italic border-border">
+                <Link href="/my">Abort Mission</Link>
               </Button>
             </div>
           </form>

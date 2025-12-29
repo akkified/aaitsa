@@ -2,12 +2,13 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image" // Added Image component for optimization
 import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
-import { Moon, Sun, Command, Menu, LogIn, LogOut, User as UserIcon } from "lucide-react"
+import { Moon, Sun, Menu, LogIn, LogOut, User as UserIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { createClient } from "@/lib/supabase/client" // Ensure this path is correct
+import { createClient } from "@/lib/supabase/client"
 
 export function Navbar() {
   const { setTheme, theme } = useTheme()
@@ -20,14 +21,12 @@ export function Navbar() {
   React.useEffect(() => {
     setMounted(true)
 
-    // Check initial session
     const checkUser = async () => {
       const { data } = await supabase.auth.getUser()
       setUser(data.user)
     }
     checkUser()
 
-    // Listen for auth changes (login/logout)
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
     })
@@ -49,7 +48,6 @@ export function Navbar() {
     { name: "Resources", href: "/resources" },
   ]
 
-  // Add Portal link only if logged in
   if (user) {
     navLinks.push({ name: "Portal", href: "/my" })
   }
@@ -60,9 +58,16 @@ export function Navbar() {
         
         {/* Logo Section */}
         <div className="flex items-center gap-10">
-          <Link href="/" className="flex items-center space-x-2 group">
-            <div className="bg-primary p-1.5 rounded-md transition-all group-hover:shadow-[0_0_15px_rgba(37,99,235,0.4)]">
-              <Command className="h-5 w-5 text-primary-foreground" />
+          <Link href="/" className="flex items-center space-x-3 group">
+            {/* Logo Container */}
+            <div className="relative w-8 h-8 transition-all group-hover:scale-110">
+              <Image 
+                src="/logo.png" 
+                alt="AAI TSA Logo" 
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
             <span className="font-black tracking-tighter text-xl italic uppercase">
               AAI <span className="text-primary">TSA</span>
@@ -113,7 +118,6 @@ export function Navbar() {
           {/* Conditional Auth Button */}
           {user ? (
             <div className="flex items-center gap-2">
-              {/* Profile Link */}
               <Button 
                 asChild 
                 variant="ghost" 
@@ -125,7 +129,6 @@ export function Navbar() {
                 </Link>
               </Button>
 
-              {/* Logout Button */}
               <Button 
                 onClick={handleLogout}
                 variant="outline" 
@@ -136,7 +139,6 @@ export function Navbar() {
               </Button>
             </div>
           ) : (
-            /* Login Button */
             <Button 
               asChild 
               variant="default" 
