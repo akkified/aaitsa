@@ -77,7 +77,7 @@ export default function RootLayout({
                       </span>
                     </Link>
                     <p className="text-muted-foreground text-sm max-w-sm leading-relaxed font-medium">
-                      Alliance Academy International Technology Student Association. 
+                      Alliance Academy Technology Student Association. 
                       Developing technical leaders through rigorous competition and collaborative innovation.
                     </p>
                     <div className="flex items-center gap-4 text-muted-foreground">
