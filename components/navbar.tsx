@@ -15,10 +15,12 @@ export function Navbar() {
   const [mounted, setMounted] = React.useState(false)
   const [user, setUser] = React.useState<any>(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
+  
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
 
+  // Initial Auth and Listener
   React.useEffect(() => {
     setMounted(true)
     const checkUser = async () => {
@@ -36,7 +38,7 @@ export function Navbar() {
     }
   }, [supabase])
 
-  // Handle body scroll lock and close menu on route change
+  // Body scroll lock for mobile menu
   React.useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden"
@@ -46,6 +48,7 @@ export function Navbar() {
     return () => { document.body.style.overflow = "unset" }
   }, [isMobileMenuOpen])
 
+  // Close menu on navigation
   React.useEffect(() => {
     setIsMobileMenuOpen(false)
   }, [pathname])
@@ -70,15 +73,24 @@ export function Navbar() {
     <header className="sticky top-0 z-[100] w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
         
-        {/* Logo Section */}
+        {/* Logo Section - Dynamic Theme Switch */}
         <div className="flex items-center gap-10">
           <Link href="/" className="flex items-center space-x-3 group">
             <div className="relative w-8 h-8 transition-all group-hover:scale-110">
+              {/* Light Mode Logo */}
               <Image 
-                src="/logo.png" 
+                src="/logo-dark.png" 
                 alt="AAI TSA Logo" 
                 fill
-                className="object-contain"
+                className="object-contain dark:hidden"
+                priority
+              />
+              {/* Dark Mode Logo */}
+              <Image 
+                src="/logo.png" 
+                alt="AAI TSA Logo Dark" 
+                fill
+                className="object-contain hidden dark:block"
                 priority
               />
             </div>
@@ -109,6 +121,7 @@ export function Navbar() {
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-2">
+          {/* Theme Toggle */}
           <Button
             variant="ghost"
             size="icon"
@@ -126,7 +139,7 @@ export function Navbar() {
 
           <div className="h-4 w-px bg-border mx-2 hidden sm:block" />
 
-          {/* Desktop Auth Buttons */}
+          {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center gap-2">
             {user ? (
               <>
@@ -138,17 +151,17 @@ export function Navbar() {
                 </Button>
               </>
             ) : (
-              <Button asChild variant="default" className="rounded-full bg-primary text-white font-black uppercase text-[10px] tracking-widest px-6">
+              <Button asChild variant="default" className="rounded-full bg-primary text-white font-black uppercase text-[10px] tracking-widest px-6 shadow-lg shadow-primary/20">
                 <Link href="/auth/login"><LogIn className="h-3.5 w-3.5 mr-2" />Portal Access</Link>
               </Button>
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Toggle Button */}
           <Button 
             variant="ghost" 
             size="icon" 
-            className="md:hidden rounded-full z-[110]"
+            className="md:hidden rounded-full z-[110] relative"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -156,13 +169,16 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Navigation Overlay */}
+      {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
         <>
-          {/* Darker backdrop to focus on menu */}
-          <div className="fixed inset-0 top-16 bg-background/80 backdrop-blur-sm z-[90] md:hidden animate-in fade-in duration-200" onClick={() => setIsMobileMenuOpen(false)} />
+          {/* Background Overlay (Clickable to close) */}
+          <div 
+            className="fixed inset-0 top-16 bg-background/80 backdrop-blur-sm z-[90] md:hidden animate-in fade-in duration-200" 
+            onClick={() => setIsMobileMenuOpen(false)} 
+          />
           
-          {/* Menu Content */}
+          {/* Actual Menu Container */}
           <div className="fixed top-16 left-0 right-0 z-[100] bg-card border-b border-border md:hidden animate-in slide-in-from-top-full duration-300 shadow-2xl">
             <nav className="flex flex-col p-8 gap-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
               {navLinks.map((link) => (
@@ -183,15 +199,19 @@ export function Navbar() {
                 {user ? (
                   <>
                     <Button asChild variant="secondary" className="w-full h-16 rounded-none font-black uppercase tracking-widest italic justify-start px-8">
-                      <Link href="/my/profile"><UserIcon className="mr-4 h-6 w-6" /> My Profile</Link>
+                      <Link href="/my/profile">
+                        <UserIcon className="mr-4 h-6 w-6" /> My Profile
+                      </Link>
                     </Button>
                     <Button onClick={handleLogout} variant="destructive" className="w-full h-16 rounded-none font-black uppercase tracking-widest italic justify-start px-8">
-                      <LogOut className="mr-4 h-6 w-6" /> Log Out Terminal
+                      <LogOut className="mr-4 h-6 w-6" /> Terminate Session
                     </Button>
                   </>
                 ) : (
-                  <Button asChild className="w-full h-16 rounded-none font-black uppercase tracking-widest italic bg-primary text-white text-lg">
-                    <Link href="/auth/login"><LogIn className="mr-4 h-6 w-6" /> Portal Access</Link>
+                  <Button asChild className="w-full h-16 rounded-none bg-primary text-white font-black uppercase tracking-widest italic text-lg shadow-xl shadow-primary/20">
+                    <Link href="/auth/login">
+                      <LogIn className="mr-4 h-6 w-6" /> Portal Access
+                    </Link>
                   </Button>
                 )}
               </div>

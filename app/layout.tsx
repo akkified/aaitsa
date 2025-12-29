@@ -3,8 +3,9 @@ import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
+import Image from "next/image" // Import Image
 import Link from "next/link"
-import { Command, Github, Instagram, Mail, ExternalLink } from "lucide-react"
+import { Github, Instagram, Mail, ExternalLink } from "lucide-react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from "@/components/navbar"
 import "./globals.css"
@@ -52,15 +53,30 @@ export default function RootLayout({
                   
                   {/* Brand Column */}
                   <div className="md:col-span-2 space-y-6">
-                    <Link href="/" className="flex items-center space-x-2 group">
-                      <div className="bg-primary p-1 rounded">
-                        <Command className="h-5 w-5 text-white" />
+                    <Link href="/" className="flex items-center space-x-3 group">
+                      <div className="relative w-8 h-8 transition-all group-hover:scale-110">
+                        {/* Footer Logic:
+                          Dark Mode -> logo.png
+                          Light Mode -> logo-dark.png
+                        */}
+                        <Image 
+                          src="/logo.png" 
+                          alt="AAI TSA Logo" 
+                          fill
+                          className="object-contain hidden dark:block"
+                        />
+                        <Image 
+                          src="/logo-dark.png" 
+                          alt="AAI TSA Logo" 
+                          fill
+                          className="object-contain block dark:hidden"
+                        />
                       </div>
                       <span className="font-black tracking-tighter text-xl italic uppercase">
                         AAI <span className="text-primary">TSA</span>
                       </span>
                     </Link>
-                    <p className="text-muted-foreground text-sm max-w-sm leading-relaxed">
+                    <p className="text-muted-foreground text-sm max-w-sm leading-relaxed font-medium">
                       Alliance Academy International Technology Student Association. 
                       Developing technical leaders through rigorous competition and collaborative innovation.
                     </p>
@@ -73,8 +89,8 @@ export default function RootLayout({
 
                   {/* Links Column 1 */}
                   <div>
-                    <h4 className="text-sm font-bold uppercase tracking-widest mb-6 text-foreground">Navigation</h4>
-                    <ul className="space-y-4 text-sm text-muted-foreground font-medium">
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-6 text-foreground italic border-l-2 border-primary pl-3">Navigation</h4>
+                    <ul className="space-y-4 text-xs text-muted-foreground font-bold uppercase tracking-wider">
                       <li><Link href="/resources" className="hover:text-primary transition-colors">Competitions</Link></li>
                       <li><Link href="/gallery" className="hover:text-primary transition-colors">Chapter Gallery</Link></li>
                       <li><Link href="/about" className="hover:text-primary transition-colors">Officer Team</Link></li>
@@ -84,8 +100,8 @@ export default function RootLayout({
 
                   {/* Links Column 2 */}
                   <div>
-                    <h4 className="text-sm font-bold uppercase tracking-widest mb-6 text-foreground">External</h4>
-                    <ul className="space-y-4 text-sm text-muted-foreground font-medium">
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-6 text-foreground italic border-l-2 border-primary pl-3">External</h4>
+                    <ul className="space-y-4 text-xs text-muted-foreground font-bold uppercase tracking-wider">
                       <li>
                         <a href="https://tsaweb.org" target="_blank" className="hover:text-primary transition-colors flex items-center gap-1">
                           National TSA <ExternalLink className="h-3 w-3" />
@@ -102,11 +118,11 @@ export default function RootLayout({
                 </div>
 
                 <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
-                  <p className="text-xs text-muted-foreground font-mono uppercase tracking-tighter">
+                  <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest font-bold">
                     © 2025 ALLIANCE ACADEMY TSA.
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    Built by <span className="text-foreground font-bold italic">goons</span>
+                  <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">
+                    Built by <span className="text-foreground font-black italic">goons</span>
                   </p>
                 </div>
               </div>
