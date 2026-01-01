@@ -55,7 +55,7 @@ export default function AboutPage() {
           <div className="max-w-4xl">
             <div className="flex items-center gap-2 mb-4">
                 <ShieldCheck className="w-4 h-4 text-primary" />
-                <span className="text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground italic">Authorized Registry // Chapter 2432</span>
+                <span className="text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground italic">Authorized Chapter</span>
             </div>
             <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 uppercase leading-[0.9]">
               About Our <br />

@@ -48,7 +48,7 @@ export default function DashboardPage({ profile, submissions }: any) {
               <div className="flex items-center gap-2 mb-4">
                 <ShieldCheck className="w-4 h-4 text-primary" />
                 <span className="text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground italic">
-                  Student Terminal // Node_{profile?.id?.slice(0,5) || "AUTH"}
+                  Student Portal
                 </span>
               </div>
               <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase leading-[0.8] mb-2 italic">
