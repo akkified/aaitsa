@@ -122,7 +122,7 @@ export default function RootLayout({
                     © 2025 ALLIANCE ACADEMY TSA.
                   </p>
                   <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">
-                    Built by <span className="text-foreground font-black italic">goons</span>
+                    Built by <span className="text-foreground font-black italic">Shreyas Yeldandi and Akhil Akella</span>
                   </p>
                 </div>
               </div>
