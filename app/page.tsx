@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -186,8 +187,8 @@ export default function HomePage() {
                         <DialogTrigger asChild>
                           <div
                             className={`aspect-square flex flex-col items-center justify-center text-xs transition-all border border-transparent cursor-pointer relative ${today
-                                ? 'bg-primary text-white font-black'
-                                : 'text-foreground hover:border-primary hover:text-primary'
+                              ? 'bg-primary text-white font-black'
+                              : 'text-foreground hover:border-primary hover:text-primary'
                               }`}
                           >
                             <span>{date?.getDate()}</span>
