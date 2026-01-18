@@ -2,17 +2,26 @@
 
 import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
-import { 
-  Trophy, Users, Lightbulb, BookOpen, Award, 
-  ArrowRight, ChevronLeft, ChevronRight, Shield, Activity, Globe
+import {
+  Trophy, Users, Lightbulb, BookOpen, Award,
+  ArrowRight, ChevronLeft, ChevronRight, Shield, Activity, Globe, Clock
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog"
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
-  
+
   useEffect(() => {
     setMounted(true)
     setCurrentDate(new Date())
@@ -30,7 +39,7 @@ export default function HomePage() {
 
     const days: (Date | null)[] = Array(startWeekday).fill(null)
     for (let d = 1; d <= daysInMonth; d++) days.push(new Date(year, month, d))
-    
+
     return {
       monthName: firstOfMonth.toLocaleString('default', { month: 'long' }),
       year,
@@ -38,9 +47,9 @@ export default function HomePage() {
     }
   }, [currentDate])
 
-  const events = { 
-    "2025-10-20": "Technical Workshop", 
-    "2025-12-28": "State Project Review" 
+  const events = {
+    "2025-10-20": "Technical Workshop",
+    "2025-12-28": "State Project Review"
   }
 
   if (!mounted) return <div className="min-h-screen bg-background" />
@@ -52,7 +61,7 @@ export default function HomePage() {
       <section className="relative pt-24 lg:pt-40 pb-20 overflow-hidden">
         {/* Subtle Gradient Overlay */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
-        
+
         <div className="container px-6 relative z-10 mx-auto">
           <div className="flex flex-col lg:flex-row gap-16 items-start">
             <div className="lg:w-full max-w-5xl">
@@ -62,7 +71,7 @@ export default function HomePage() {
                   Technology Student Association
                 </span>
               </div>
-              
+
               <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-10 uppercase">
                 Engineering the <br />
                 <span className="text-primary italic font-light italic">Next Standard.</span>
@@ -72,7 +81,7 @@ export default function HomePage() {
                 <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-none px-12 h-16 text-xs font-black tracking-widest uppercase transition-all shadow-xl shadow-primary/20">
                   <Link href="/resources">Access Registry</Link>
                 </Button>
-                
+
                 <div className="grid grid-cols-2 gap-10">
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-primary uppercase tracking-widest">Global Status</p>
@@ -117,7 +126,7 @@ export default function HomePage() {
                 <p className="text-white/70 text-xs mt-2 font-mono tracking-tighter italic">// View Chapter Officers</p>
               </div>
               <div className="absolute -bottom-4 -right-4 opacity-10">
-                 <Shield className="w-32 h-32" />
+                <Shield className="w-32 h-32" />
               </div>
             </div>
 
@@ -158,28 +167,72 @@ export default function HomePage() {
               <div className="p-8 border-b border-border flex justify-between items-center bg-secondary/20">
                 <h3 className="font-black uppercase tracking-[0.2em] text-xs">{calendarData.monthName} // {calendarData.year}</h3>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" onClick={goPrevMonth} className="h-8 w-8 rounded-none border border-border"><ChevronLeft className="w-4 h-4"/></Button>
-                  <Button variant="ghost" size="icon" onClick={goNextMonth} className="h-8 w-8 rounded-none border border-border"><ChevronRight className="w-4 h-4"/></Button>
+                  <Button variant="ghost" size="icon" onClick={goPrevMonth} className="h-8 w-8 rounded-none border border-border"><ChevronLeft className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" onClick={goNextMonth} className="h-8 w-8 rounded-none border border-border"><ChevronRight className="w-4 h-4" /></Button>
                 </div>
               </div>
               <CardContent className="p-8">
                 <div className="grid grid-cols-7 gap-1">
-                  {['S','M','T','W','T','F','S'].map((day, idx) => (
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
                     <div key={`weekday-${idx}`} className="text-center text-[9px] font-black text-muted-foreground pb-6 uppercase tracking-widest">{day}</div>
                   ))}
                   {calendarData.days.map((date, i) => {
+                    const dateStr = date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : null;
+                    const eventTitle = dateStr ? events[dateStr as keyof typeof events] : null;
                     const today = date && date.toDateString() === new Date().toDateString();
+
                     return (
-                      <div 
-                        key={`date-${i}`} 
-                        className={`aspect-square flex items-center justify-center text-xs transition-all border border-transparent ${
-                          today 
-                          ? 'bg-primary text-white font-black' 
-                          : 'text-foreground hover:border-primary hover:text-primary'
-                        }`}
-                      >
-                        {date?.getDate()}
-                      </div>
+                      <Dialog key={`date-${i}`}>
+                        <DialogTrigger asChild>
+                          <div
+                            className={`aspect-square flex flex-col items-center justify-center text-xs transition-all border border-transparent cursor-pointer relative ${today
+                                ? 'bg-primary text-white font-black'
+                                : 'text-foreground hover:border-primary hover:text-primary'
+                              }`}
+                          >
+                            <span>{date?.getDate()}</span>
+                            {eventTitle && !today && (
+                              <div className="absolute bottom-1 w-1 h-1 rounded-full bg-primary" />
+                            )}
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px] bg-card border-border rounded-[2.5rem]">
+                          <DialogHeader>
+                            <DialogTitle className="text-2xl font-black uppercase tracking-tighter italic">
+                              {date?.toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric' })}
+                            </DialogTitle>
+                            <DialogDescription className="text-xs font-mono uppercase tracking-widest opacity-50">
+                              // CHAPTER BENCHMARK DETAILS
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="py-6">
+                            {eventTitle ? (
+                              <div className="p-6 border border-primary/20 bg-primary/5 rounded-3xl">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Scheduled Event</span>
+                                </div>
+                                <h4 className="text-xl font-black uppercase tracking-tight">{eventTitle}</h4>
+                                <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+                                  This milestone is part of the 2025 Competitive Cycle. Please refer to the registry for specific rubrics and submission guidelines.
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="text-center py-10 opacity-40">
+                                <Clock className="w-10 h-10 mx-auto mb-4" />
+                                <p className="text-[10px] font-black uppercase tracking-widest">No Events Scheduled</p>
+                              </div>
+                            )}
+                          </div>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button variant="outline" className="rounded-full border-border uppercase text-[10px] font-black tracking-widest px-8">
+                                Close
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     )
                   })}
                 </div>
@@ -196,9 +249,9 @@ export default function HomePage() {
             <h2 className="text-5xl md:text-7xl font-black text-foreground mb-8 relative z-10 tracking-tighter uppercase italic">Stay Integrated.</h2>
             <p className="text-muted-foreground mb-12 max-w-lg mx-auto relative z-10 font-mono text-sm uppercase tracking-tight">Technical updates and competition advisories transmitted via chapter registry.</p>
             <form className="flex flex-col md:flex-row gap-0 max-w-2xl mx-auto relative z-10" onSubmit={e => e.preventDefault()}>
-              <input 
-                className="flex-1 bg-secondary/50 border border-border px-8 py-5 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary" 
-                placeholder="STUDENT_ID@FORSYTH.K12.GA.US" 
+              <input
+                className="flex-1 bg-secondary/50 border border-border px-8 py-5 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                placeholder="STUDENT_ID@FORSYTH.K12.GA.US"
               />
               <Button className="bg-primary text-white rounded-none px-12 h-auto text-xs font-black tracking-[0.2em] uppercase transition-all hover:bg-blue-700">SUBMIT_APPLICATION</Button>
             </form>

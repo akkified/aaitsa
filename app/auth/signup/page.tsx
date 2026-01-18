@@ -42,6 +42,13 @@ export default function SignUpPage() {
     }
 
     try {
+      // 1. Check if email is in whitelist table
+      const { data: whitelistEntry, error: whitelistError } = await supabase
+        .from("whitelist_emails")
+        .select("email")
+        .eq("email", email.toLowerCase().trim())
+        .single()
+
       const adminEmails = [
         "advisor@aaitsa.org",
         "president@aaitsa.org",
@@ -53,8 +60,13 @@ export default function SignUpPage() {
         "mechvp@aaitsa.org",
         "csvp@aaitsa.org",
       ]
-      const isAdmin = adminEmails.includes(email.toLowerCase())
-      const userRole = isAdmin ? "admin" : "student"
+      const isHardcodedAdmin = adminEmails.includes(email.toLowerCase())
+
+      if (!whitelistEntry && !isHardcodedAdmin) {
+        throw new Error("This email is not authorized to sign up. Please contact an administrator.")
+      }
+
+      const userRole = isHardcodedAdmin ? "admin" : "student"
 
       const { error } = await supabase.auth.signUp({
         email,

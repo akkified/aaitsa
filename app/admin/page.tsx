@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
-import { 
-  Users, FileText, Clock, CheckCircle, XCircle, 
-  User, Shield, LayoutDashboard, Activity, Settings, 
+import {
+  Users, FileText, Clock, CheckCircle, XCircle,
+  User, Shield, LayoutDashboard, Activity, Settings,
   ArrowUpRight, History
 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -23,7 +23,7 @@ export default function AdminDashboardPage() {
   const [mounted, setMounted] = useState(false)
   const [sortBy, setSortBy] = useState("submitted_at")
   const [sortOrder, setSortOrder] = useState("desc")
-  
+
   const router = useRouter()
   const supabase = createClient()
 
@@ -52,7 +52,7 @@ export default function AdminDashboardPage() {
         )
         setSubmissionsWithProfiles(withProfiles)
 
-        const { data: users } = await supabase.from("profiles").select("role").neq("role", "admin")
+        const { data: users } = await supabase.from("profiles").select("*")
         setUserStats(users || [])
       } catch (error) {
         console.error("Error loading admin data:", error)
@@ -66,10 +66,10 @@ export default function AdminDashboardPage() {
   if (!mounted) return null
 
   const stats = [
-    { label: "Total Entries", val: submissionsWithProfiles.length, icon: <FileText className="w-4 h-4"/> },
-    { label: "Needs Review", val: submissionsWithProfiles.filter(s => s.status === "pending").length, icon: <Clock className="w-4 h-4 text-yellow-500"/> },
-    { label: "Chapter Members", val: userStats.length, icon: <Users className="w-4 h-4 text-primary"/> },
-    { label: "Total Students", val: userStats.filter(u => u.role === "student").length, icon: <User className="w-4 h-4"/> },
+    { label: "Total Entries", val: submissionsWithProfiles.length, icon: <FileText className="w-4 h-4" /> },
+    { label: "Needs Review", val: submissionsWithProfiles.filter(s => s.status === "pending").length, icon: <Clock className="w-4 h-4 text-yellow-500" /> },
+    { label: "Chapter Members", val: userStats.length, icon: <Users className="w-4 h-4 text-primary" /> },
+    { label: "Total Students", val: userStats.filter(u => u.role === "student").length, icon: <User className="w-4 h-4" /> },
   ]
 
   const sortedSubmissions = [...submissionsWithProfiles].sort((a, b) => {
@@ -102,7 +102,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
-      
+
       {/* Admin Hero Section */}
       <section className="relative pt-20 pb-10 border-b border-border/40">
         <div className="container px-6 mx-auto">
@@ -119,10 +119,15 @@ export default function AdminDashboardPage() {
                 <span className="text-primary italic">Dashboard.</span>
               </h1>
             </div>
-            
-            <div className="flex items-center gap-3">
+
+            <div className="flex flex-wrap items-center gap-3">
               <Button asChild variant="outline" className="rounded-full border-border uppercase text-[10px] font-black tracking-widest px-8">
                 <Link href="/my">Student View</Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full border-border uppercase text-[10px] font-black tracking-widest px-8">
+                <Link href="/admin/whitelist">
+                  <Shield className="mr-2 h-3 w-4" /> Whitelist
+                </Link>
               </Button>
               <Button asChild className="rounded-full bg-primary text-white uppercase text-[10px] font-black tracking-widest px-8 shadow-lg shadow-primary/20">
                 <Link href="/admin/users">
@@ -135,7 +140,7 @@ export default function AdminDashboardPage() {
       </section>
 
       <div className="container px-6 py-12 mx-auto">
-        
+
         {/* Admin Stats Monitor */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
           {stats.map((stat, i) => (
@@ -158,9 +163,9 @@ export default function AdminDashboardPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 px-2">
           <div>
             <h2 className="text-2xl font-black uppercase tracking-tighter italic">Incoming Logs</h2>
-            <p className="text-xs text-muted-foreground font-mono mt-1">// SORTING SYSTEM ACTIVE</p>
+            <p className="text-xs text-muted-foreground font-mono mt-1">// SUBMISSION QUEUE</p>
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[180px] bg-secondary/30 border-border rounded-xl text-[10px] font-black uppercase tracking-widest">
@@ -173,24 +178,15 @@ export default function AdminDashboardPage() {
                 <SelectItem value="title">TITLE</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={sortOrder} onValueChange={setSortOrder}>
-              <SelectTrigger className="w-[120px] bg-secondary/30 border-border rounded-xl text-[10px] font-black uppercase tracking-widest">
-                <SelectValue placeholder="ORDER" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border uppercase font-bold text-[10px]">
-                <SelectItem value="desc">DESC</SelectItem>
-                <SelectItem value="asc">ASC</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
         {/* Submissions Management Card */}
-        <Card className="bg-card border-border rounded-[2.5rem] overflow-hidden">
+        <Card className="bg-card border-border rounded-[2.5rem] overflow-hidden mb-12">
           <CardContent className="p-0">
             {sortedSubmissions.length > 0 ? (
               <div className="divide-y divide-border/50">
-                {sortedSubmissions.map((submission) => (
+                {sortedSubmissions.slice(0, 5).map((submission) => (
                   <div key={submission.id} className="group p-8 hover:bg-primary/5 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-3 mb-3">
@@ -200,32 +196,20 @@ export default function AdminDashboardPage() {
                         <Badge className={cn("px-3 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-widest", getStatusStyles(submission.status))}>
                           {submission.status}
                         </Badge>
-                        {submission.submission_group && (
-                          <Badge variant="outline" className="text-[9px] font-bold uppercase opacity-50">
-                            {submission.submission_group}
-                          </Badge>
-                        )}
                       </div>
-                      
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-2 gap-x-6">
                         <div className="flex items-center gap-2">
                           <User className="w-3 h-3 text-primary" />
                           <span className="text-[10px] font-bold uppercase tracking-tight">{submission.profiles?.full_name}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Activity className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-[10px] font-bold uppercase tracking-tight opacity-70">Gr: {submission.profiles?.school_year}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
                           <History className="w-3 h-3 text-muted-foreground" />
                           <span className="text-[10px] font-bold uppercase tracking-tight opacity-70">{new Date(submission.submitted_at).toLocaleDateString()}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-mono text-primary font-black uppercase tracking-widest">{submission.category}</span>
-                        </div>
                       </div>
                     </div>
-                    
+
                     <Button asChild variant="outline" className="rounded-full px-8 border-border group-hover:border-primary group-hover:text-primary transition-all uppercase text-[10px] font-black tracking-widest">
                       <Link href={`/admin/submissions/${submission.id}`}>Review <ArrowUpRight className="ml-2 w-3 h-3" /></Link>
                     </Button>
@@ -236,11 +220,52 @@ export default function AdminDashboardPage() {
               <div className="text-center py-24">
                 <FileText className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
                 <h3 className="text-2xl font-black uppercase tracking-tighter mb-2">No Records Detected</h3>
-                <p className="text-muted-foreground text-sm uppercase tracking-widest font-bold opacity-50 italic">Waiting for incoming project logs...</p>
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Member Registry Section */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-8 px-2">
+            <div>
+              <h2 className="text-2xl font-black uppercase tracking-tighter italic">Member Registry</h2>
+              <p className="text-xs text-muted-foreground font-mono mt-1">// ACTIVE PERSONNEL</p>
+            </div>
+            <Button asChild variant="outline" className="rounded-full border-border uppercase text-[10px] font-black tracking-widest px-8">
+              <Link href="/admin/users">Manage All Users</Link>
+            </Button>
+          </div>
+
+          <Card className="bg-card border-border rounded-[2.5rem] overflow-hidden">
+            <CardContent className="p-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-x divide-y divide-border/50">
+                {userStats.length > 0 ? (
+                  userStats.slice(0, 9).map((user, i) => (
+                    <div key={i} className="p-6 hover:bg-primary/5 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                          <User className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm tracking-tight">{user.full_name || "Unknown User"}</p>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-[8px] font-bold uppercase opacity-50 px-2 min-h-0 h-4 items-center">{user.role}</Badge>
+                            <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest opacity-50">{user.school_year}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-12 text-center opacity-50 italic uppercase text-[10px] font-black tracking-widest">
+                    No members detected in system
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
