@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog"
+import { NewsletterSignup } from "@/components/newsletter-signup"
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
@@ -42,27 +43,24 @@ export default function HomePage() {
     for (let d = 1; d <= daysInMonth; d++) days.push(new Date(year, month, d))
 
     return {
-      monthName: firstOfMonth.toLocaleString('default', { month: 'long' }),
+      monthName: firstOfMonth.toLocaleString("default", { month: "long" }),
       year,
-      days
+      days,
     }
   }, [currentDate])
 
   const events = {
     "2025-10-20": "Technical Workshop",
-    "2025-12-28": "State Project Review"
+    "2025-12-28": "State Project Review",
   }
 
   if (!mounted) return <div className="min-h-screen bg-background" />
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
-
       {/* Hero Section */}
       <section className="relative pt-24 lg:pt-40 pb-20 overflow-hidden">
-        {/* Subtle Gradient Overlay */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
-
         <div className="container px-6 relative z-10 mx-auto">
           <div className="flex flex-col lg:flex-row gap-16 items-start">
             <div className="lg:w-full max-w-5xl">
@@ -168,28 +166,34 @@ export default function HomePage() {
               <div className="p-8 border-b border-border flex justify-between items-center bg-secondary/20">
                 <h3 className="font-black uppercase tracking-[0.2em] text-xs">{calendarData.monthName} // {calendarData.year}</h3>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" onClick={goPrevMonth} className="h-8 w-8 rounded-none border border-border"><ChevronLeft className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="icon" onClick={goNextMonth} className="h-8 w-8 rounded-none border border-border"><ChevronRight className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" onClick={goPrevMonth} className="h-8 w-8 rounded-none border border-border">
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={goNextMonth} className="h-8 w-8 rounded-none border border-border">
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
               <CardContent className="p-8">
                 <div className="grid grid-cols-7 gap-1">
-                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
-                    <div key={`weekday-${idx}`} className="text-center text-[9px] font-black text-muted-foreground pb-6 uppercase tracking-widest">{day}</div>
+                  {["S", "M", "T", "W", "T", "F", "S"].map((day, idx) => (
+                    <div key={`weekday-${idx}`} className="text-center text-[9px] font-black text-muted-foreground pb-6 uppercase tracking-widest">
+                      {day}
+                    </div>
                   ))}
                   {calendarData.days.map((date, i) => {
-                    const dateStr = date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : null;
-                    const eventTitle = dateStr ? events[dateStr as keyof typeof events] : null;
-                    const today = date && date.toDateString() === new Date().toDateString();
+                    const dateStr = date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` : null
+                    const eventTitle = dateStr ? events[dateStr as keyof typeof events] : null
+                    const today = date && date.toDateString() === new Date().toDateString()
 
                     return (
                       <Dialog key={`date-${i}`}>
                         <DialogTrigger asChild>
                           <div
                             className={`aspect-square flex flex-col items-center justify-center text-xs transition-all border border-transparent cursor-pointer relative ${today
-                              ? 'bg-primary text-white font-black'
-                              : 'text-foreground hover:border-primary hover:text-primary'
-                              }`}
+                              ? "bg-primary text-white font-black"
+                              : "text-foreground hover:border-primary hover:text-primary"
+                            }`}
                           >
                             <span>{date?.getDate()}</span>
                             {eventTitle && !today && (
@@ -200,7 +204,7 @@ export default function HomePage() {
                         <DialogContent className="sm:max-w-[425px] bg-card border-border rounded-[2.5rem]">
                           <DialogHeader>
                             <DialogTitle className="text-2xl font-black uppercase tracking-tighter italic">
-                              {date?.toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric' })}
+                              {date?.toLocaleDateString("default", { month: "long", day: "numeric", year: "numeric" })}
                             </DialogTitle>
                             <DialogDescription className="text-xs font-mono uppercase tracking-widest opacity-50">
                               // CHAPTER BENCHMARK DETAILS
@@ -248,18 +252,13 @@ export default function HomePage() {
         <div className="container px-6 mx-auto">
           <div className="bg-card border border-border p-12 md:p-24 text-center relative overflow-hidden">
             <h2 className="text-5xl md:text-7xl font-black text-foreground mb-8 relative z-10 tracking-tighter uppercase italic">Stay Integrated.</h2>
-            <p className="text-muted-foreground mb-12 max-w-lg mx-auto relative z-10 font-mono text-sm uppercase tracking-tight">Technical updates and competition advisories transmitted via chapter registry.</p>
-            <form className="flex flex-col md:flex-row gap-0 max-w-2xl mx-auto relative z-10" onSubmit={e => e.preventDefault()}>
-              <input
-                className="flex-1 bg-secondary/50 border border-border px-8 py-5 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary"
-                placeholder="STUDENT_ID@FORSYTH.K12.GA.US"
-              />
-              <Button className="bg-primary text-white rounded-none px-12 h-auto text-xs font-black tracking-[0.2em] uppercase transition-all hover:bg-blue-700">SUBMIT_APPLICATION</Button>
-            </form>
+            <p className="text-muted-foreground mb-12 max-w-lg mx-auto relative z-10 font-mono text-sm uppercase tracking-tight">
+              Technical updates and competition advisories transmitted via chapter registry.
+            </p>
+            <NewsletterSignup />
           </div>
         </div>
       </section>
-
     </div>
   )
 }

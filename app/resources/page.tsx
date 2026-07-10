@@ -1,184 +1,334 @@
 "use client"
 
-import { useMemo, useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { 
-  Users, Search, BookOpen, Trophy, ExternalLink, Download, ShieldCheck, FileText 
-} from "lucide-react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  FileText,
+  Search,
+  Download,
+  ExternalLink,
+  Calendar,
+  User,
+  ShieldCheck,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
+import { format } from "date-fns"
+
+const CATEGORIES = [
+  "all",
+  "competition-rules",
+  "competition-rubrics",
+  "project-templates",
+  "guides",
+  "forms",
+  "presentations",
+  "other",
+] as const
+
+interface Resource {
+  id: string
+  title: string
+  description: string | null
+  category: string
+  file_url: string
+  file_filename: string
+  file_size: number
+  file_type: string
+  uploaded_by: string
+  event_name: string | null
+  event_date: string | null
+  is_public: boolean
+  download_count: number
+  created_at: string
+  updated_at: string
+  profiles: { full_name: string | null; email: string } | null
+}
+
+const FILE_ICONS: Record<string, React.ReactNode> = {
+  "application/pdf": <FileText className="h-5 w-5 text-red-500" />,
+  "application/msword": <FileText className="h-5 w-5 text-blue-500" />,
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": <FileText className="h-5 w-5 text-blue-500" />,
+  "application/vnd.ms-powerpoint": <FileText className="h-5 w-5 text-orange-500" />,
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": <FileText className="h-5 w-5 text-orange-500" />,
+  "application/vnd.ms-excel": <FileText className="h-5 w-5 text-green-500" />,
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": <FileText className="h-5 w-5 text-green-500" />,
+  "text/plain": <FileText className="h-5 w-5 text-gray-500" />,
+  "application/zip": <FileText className="h-5 w-5 text-purple-500" />,
+  "application/x-zip-compressed": <FileText className="h-5 w-5 text-purple-500" />,
+}
+
+const getFileIcon = (type: string) => FILE_ICONS[type] || <FileText className="h-5 w-5 text-muted-foreground" />
+
+const formatFileSize = (bytes: number) => {
+  if (bytes === 0) return "0 Bytes"
+  const k = 1024
+  const sizes = ["Bytes", "KB", "MB", "GB"]
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+}
+
+const formatCategory = (cat: string) =>
+  cat
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ")
 
 export default function ResourcesPage() {
+  const [resources, setResources] = useState<Resource[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const [mounted, setMounted] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
 
-  useEffect(() => setMounted(true), [])
+  useEffect(() => {
+    setMounted(true)
+    fetchResources()
+  }, [])
 
-  const allCompetitions = [
-    { name: "Animatronics", participants: "1 Team of 2-6" },
-    { name: "Architectural Design", participants: "Individual OR 1 Team of 1-6" },
-    { name: "Audio Podcasting", participants: "Individual OR 1 Team of 1-6" },
-    { name: "Biotechnology Design", participants: "1 Team of 2-6" },
-    { name: "Board Game Design", participants: "1 Team of 2-6" },
-    { name: "Children’s Stories", participants: "1 Team of 1-6 OR 1 Individual" },
-    { name: "Coding", participants: "1 Team of 2" },
-    { name: "Computer-Aided Design (CAD), Architecture", participants: "1 Individual" },
-    { name: "Computer-Aided Design (CAD), Engineering", participants: "1 Individual" },
-    { name: "Cybersecurity", participants: "1 Team of 10" },
-    { name: "Data Science and Analytics", participants: "1 Team of 1-2 OR 1 Individual" },
-    { name: "Debating Technical Issues", participants: "1 Team of 2" },
-    { name: "Digital Video Production", participants: "1 Team of 1-3 OR 1 Individual" },
-    { name: "Dragster Design", participants: "2 Individuals" },
-    { name: "Drone Challenge", participants: "1 Team of 2-6" },
-    { name: "Engineering Design", participants: "1 Team of 3-6" },
-    { name: "Extemporaneous Speech", participants: "1 Individual" },
-    { name: "Fashion Design and Technology", participants: "1 Team of 2-4" },
-    { name: "Flight Endurance", participants: "2 Individuals" },
-    { name: "Forensic Science", participants: "1 Team of 2" },
-    { name: "Future Technology and Engineering Teacher", participants: "2 Individuals" },
-    { name: "Geospatial Technology", participants: "1 Team of 2-3" },
-    { name: "Manufacturing Prototype", participants: "1 Team of 2-6" },
-    { name: "Music Production", participants: "1 Team 1-6" },
-    { name: "On Demand Video", participants: "1 Team 2-6" },
-    { name: "Photographic Technology", participants: "1 Individual" },
-    { name: "Prepared Presentation", participants: "1 Individual" },
-    { name: "Promotional Design", participants: "1 Individual" },
-    { name: "Robotics", participants: "1 Team of 2-6" },
-    { name: "Senior Solar Sprint", participants: "2 Teams of 2-4" },
-    { name: "Software Development", participants: "1 Team 2-6" },
-    { name: "Stem Mass Media", participants: "1 Team of 2-3" },
-    { name: "Structural Design and Engineering", participants: "1 Team of 2" },
-    { name: "System Control Technology", participants: "1 Teams of 3" },
-    { name: "Technology Bowl", participants: "1 Team of 3" },
-    { name: "Technology Problem Solving", participants: "1 Team of 2" },
-    { name: "Transportation Modeling", participants: "2 Individuals" },
-    { name: "Video Game Design", participants: "1 Team of 2-6" },
-    { name: "Virtual Reality Simulation (VR)", participants: "1 Team of 1-6" },
-    { name: "Webmaster", participants: "1 Team 2-6" },
-  ]
+  const fetchResources = async () => {
+    try {
+      const params = new URLSearchParams({
+        public: "true",
+        limit: "100",
+      })
+      if (categoryFilter !== "all") params.set("category", categoryFilter)
 
-  const filteredCompetitions = allCompetitions.filter(comp => 
-    comp.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+      const response = await fetch(`/api/resources?${params}`)
+      if (!response.ok) throw new Error("Failed to fetch")
+      const data = await response.json()
+      setResources(data.resources || [])
+    } catch (err) {
+      setError("Failed to load resources")
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (mounted) fetchResources()
+  }, [categoryFilter, mounted])
+
+  const filteredResources = resources.filter((r) => {
+    const matchesSearch =
+      r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.event_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesSearch
+  })
+
+  const handleDownload = async (resource: Resource) => {
+    // Increment download count
+    try {
+      await fetch("/api/resources/upload", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: resource.id, download_count: resource.download_count + 1 }),
+      })
+    } catch (err) {
+      console.error("Failed to increment download count:", err)
+    }
+
+    // Trigger download
+    const link = document.createElement("a")
+    link.href = resource.file_url
+    link.download = resource.file_filename
+    link.target = "_blank"
+    link.rel = "noopener noreferrer"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   if (!mounted) return <div className="min-h-screen bg-background" />
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Hero Section */}
-      <section className="relative pt-24 pb-12 overflow-hidden border-b border-border/40 bg-secondary/5">
+      <section className="relative pt-24 lg:pt-32 pb-12 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[300px] bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
         <div className="container px-6 relative z-10 mx-auto">
-          <div className="inline-flex items-center gap-2 mb-6 text-primary">
-            <ShieldCheck className="w-4 h-4" />
-            <span className="text-[10px] font-black tracking-[0.4em] uppercase">Verified Registry // HS Division</span>
+          <div className="max-w-4xl">
+            <div className="inline-flex items-center gap-2 mb-6 text-primary">
+              <ShieldCheck className="w-4 h-4" />
+              <span className="text-[10px] font-black tracking-[0.4em] uppercase">Verified Registry // HS Division</span>
+            </div>
+            <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-6 uppercase leading-none">
+              Technical <br />
+              <span className="text-primary italic">Protocols.</span>
+            </h1>
+            <p className="max-w-2xl text-muted-foreground text-sm md:text-base leading-relaxed border-l-2 border-primary pl-6 font-mono uppercase tracking-tight">
+              Select a resource card to download official TSA competition rubrics, rules, templates, and guides.
+              All files are distributed in standard formats for chapter-wide standardization.
+            </p>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-6 uppercase leading-none">
-            Technical <br />
-            <span className="text-primary italic">Protocols.</span>
-          </h1>
-          <p className="max-w-2xl text-muted-foreground text-sm md:text-base leading-relaxed border-l-2 border-primary pl-6 font-mono uppercase tracking-tight">
-            Select an event card to initialize the download of official TSA competitive rubrics and guidelines. All files are distributed in PDF format for chapter-wide standardization.
-          </p>
         </div>
       </section>
 
-      {/* Search Bar / Instruction */}
-      <section className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 py-8">
+      {/* Search & Filter Bar */}
+      <section className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 py-6">
         <div className="container px-6 mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 max-w-6xl mx-auto">
-             <div className="relative w-full md:max-w-md">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input 
-                  placeholder="FILTER BY COMPETITION..." 
-                  className="pl-12 py-6 rounded-none bg-secondary/30 border-border focus:ring-primary uppercase font-bold text-xs tracking-[0.2em]"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-             </div>
-             <div className="flex items-center gap-3 text-primary animate-pulse">
-                <Download className="w-4 h-4" />
-                <span className="text-[9px] font-black uppercase tracking-[0.3em]">Click Entry to Download Rubric</span>
-             </div>
+            <div className="relative w-full md:max-w-md">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="FILTER RESOURCES..."
+                className="pl-12 py-4 rounded-none bg-secondary/30 border-border focus:ring-primary uppercase font-bold text-xs tracking-[0.2em]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Select
+              value={categoryFilter}
+              onValueChange={(value) => setCategoryFilter(value as string)}
+            >
+              <SelectTrigger className="w-[240px] bg-secondary/30 border-border rounded-none uppercase font-bold text-[10px] tracking-[0.3em] py-4">
+                <SelectValue placeholder="ALL CATEGORIES" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border uppercase font-bold text-[10px] rounded-none">
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat === "all" ? "ALL CATEGORIES" : formatCategory(cat)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </section>
 
-      {/* Main Grid */}
+      {/* Resources Grid */}
       <section className="py-16">
         <div className="container px-6 mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredCompetitions.map((comp, i) => (
-              <button 
-                key={i} 
-                onClick={() => {
-                  // Logic for actual download would go here
-                  console.log(`Downloading rubric for: ${comp.name}`)
-                }}
-                className="group text-left p-8 bg-card border border-border rounded-none hover:border-primary transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-100 group-hover:text-primary transition-all">
-                    <Download className="w-4 h-4" />
-                </div>
-                
-                <div>
-                  <div className="text-[9px] font-mono text-primary mb-2 opacity-50 uppercase tracking-widest">Event_Ref_{i.toString().padStart(2, '0')}</div>
-                  <h4 className="font-black text-xl uppercase tracking-tighter leading-tight group-hover:text-primary transition-colors mb-6">
-                    {comp.name}
-                  </h4>
-                </div>
+          {error && (
+            <div className="mb-8 p-4 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded text-center">
+              {error}
+            </div>
+          )}
 
-                <div className="pt-6 border-t border-border/40">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Users className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-tight leading-tight">
-                            {comp.participants}
-                        </span>
-                    </div>
-                    <Badge variant="outline" className="rounded-none border-primary/20 bg-primary/5 text-[8px] font-black text-primary px-2">
-                        PDF PROTOCOL
-                    </Badge>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {filteredCompetitions.length === 0 && (
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="aspect-[4/3] bg-muted animate-pulse rounded-lg" />
+              ))}
+            </div>
+          ) : filteredResources.length === 0 ? (
             <div className="text-center py-24 border border-dashed border-border">
-              <p className="text-muted-foreground font-mono text-xs uppercase tracking-[0.2em]">Query returned zero results in the national registry.</p>
+              <FileText className="h-16 w-16 text-muted-foreground/40 mx-auto mb-4" />
+              <p className="text-muted-foreground font-mono text-xs uppercase tracking-[0.2em]">
+                {resources.length === 0
+                  ? "No resources available yet. Check back soon!"
+                  : "No resources match your search. Try a different filter."}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredResources.map((resource, i) => (
+                <Card
+                  key={resource.id}
+                  className="group text-left p-6 bg-card border border-border rounded-none hover:border-primary transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-100 group-hover:text-primary transition-all">
+                    <Download className="h-4 w-4" />
+                  </div>
+
+                  <div>
+                    <div className="text-[9px] font-mono text-primary mb-2 opacity-50 uppercase tracking-widest">
+                      Resource_{i.toString().padStart(2, "0")}
+                    </div>
+                    <h4 className="font-black text-xl uppercase tracking-tighter leading-tight group-hover:text-primary transition-colors mb-4">
+                      {resource.title}
+                    </h4>
+                  </div>
+
+                  <div className="pt-6 border-t border-border/40">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {getFileIcon(resource.file_type)}
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-tight leading-tight">
+                          {formatCategory(resource.category)}
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="rounded-none border-primary/20 bg-primary/5 text-[8px] font-black text-primary px-2">
+                        {formatFileSize(resource.file_size)}
+                      </Badge>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between border-t border-border/40 pt-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black text-primary uppercase tracking-widest font-mono">Downloads:</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tight">{resource.download_count}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black text-primary uppercase tracking-widest font-mono">Date:</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tight">
+                          {format(new Date(resource.created_at), "MMM d, yyyy")}
+                        </span>
+                      </div>
+                    </div>
+
+                    {resource.event_name && (
+                      <div className="mt-4 flex items-center gap-2 text-[10px] font-mono text-primary uppercase tracking-widest">
+                        <Calendar className="h-3 w-3" />
+                        {resource.event_name}
+                        {resource.event_date && ` • ${format(new Date(resource.event_date), "MMM d, yyyy")}`}
+                      </div>
+                    )}
+                  </div>
+
+                  <Button
+                    className="mt-6 w-full rounded-none bg-primary text-white uppercase text-[11px] font-black tracking-[0.2em] px-12 h-14 shadow-xl shadow-primary/20 hover:bg-blue-700 transition-all"
+                    onClick={() => handleDownload(resource)}
+                  >
+                    <Download className="mr-2 h-4 w-4" /> Download Resource
+                  </Button>
+                </Card>
+              ))}
             </div>
           )}
         </div>
       </section>
 
-      {/* Resource Footer */}
+      {/* Resource Links Footer */}
       <section className="py-20 bg-secondary/10 border-t border-border/40">
         <div className="container px-6 mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           <a href="https://tsaweb.org" target="_blank" className="p-10 bg-card border border-border rounded-none hover:border-primary transition-colors group">
-            <BookOpen className="w-6 h-6 text-primary mb-6" />
+            <FileText className="h-6 w-6 text-primary mb-6" />
             <h3 className="font-black uppercase text-xs tracking-widest mb-3 flex items-center gap-2">
-              National Website <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+              National Website <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
             </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed uppercase font-medium">Access the master repository for national high school standards.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed uppercase font-medium">
+              Access the master repository for national high school standards.
+            </p>
           </a>
 
           <a href="https://gatsa.org" target="_blank" className="p-10 bg-card border border-border rounded-none hover:border-primary transition-colors group">
-            <Trophy className="w-6 h-6 text-primary mb-6" />
+            <FileText className="h-6 w-6 text-primary mb-6" />
             <h3 className="font-black uppercase text-xs tracking-widest mb-3 flex items-center gap-2">
-              Georgia Website <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+              Georgia Website <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
             </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed uppercase font-medium">Georgia State Chapter logistics and competitive schedules.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed uppercase font-medium">
+              Georgia State Chapter logistics and competitive schedules.
+            </p>
           </a>
 
           <Link href="/my" className="p-10 bg-primary text-primary-foreground rounded-none hover:bg-primary/90 transition-all flex flex-col justify-between">
             <div>
-                <Users className="w-6 h-6 mb-6" />
-                <h3 className="font-black uppercase text-xs tracking-widest mb-3">Member Portal</h3>
-                <p className="text-xs opacity-80 leading-relaxed uppercase font-medium">Authorized login for chapter competition management.</p>
+              <FileText className="h-6 w-6 mb-6" />
+              <h3 className="font-black uppercase text-xs tracking-widest mb-3">Member Portal</h3>
+              <p className="text-xs opacity-80 leading-relaxed uppercase font-medium">
+                Authorized login for chapter competition management.
+              </p>
             </div>
           </Link>
         </div>

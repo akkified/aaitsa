@@ -9,7 +9,7 @@ import Link from "next/link"
 import {
   Users, FileText, Clock, CheckCircle, XCircle,
   User, Shield, LayoutDashboard, Activity, Settings,
-  ArrowUpRight, History
+  ArrowUpRight, History, Image as ImageIcon, Mail
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
@@ -127,6 +127,21 @@ export default function AdminDashboardPage() {
               <Button asChild variant="outline" className="rounded-full border-border uppercase text-[10px] font-black tracking-widest px-8">
                 <Link href="/admin/whitelist">
                   <Shield className="mr-2 h-3 w-4" /> Whitelist
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full border-border uppercase text-[10px] font-black tracking-widest px-8">
+                <Link href="/admin/gallery">
+                  <ImageIcon className="mr-2 h-3 w-3" /> Gallery
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full border-border uppercase text-[10px] font-black tracking-widest px-8">
+                <Link href="/admin/resources">
+                  <FileText className="mr-2 h-3 w-3" /> Resources
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full border-border uppercase text-[10px] font-black tracking-widest px-8">
+                <Link href="/admin/newsletter">
+                  <Mail className="mr-2 h-3 w-3" /> Newsletter
                 </Link>
               </Button>
               <Button asChild className="rounded-full bg-primary text-white uppercase text-[10px] font-black tracking-widest px-8 shadow-lg shadow-primary/20">

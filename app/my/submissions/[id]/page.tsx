@@ -1,33 +1,49 @@
 "use client"
 
-import * as React from "react" // Ensure React is imported
+import * as React from "react"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { ArrowLeft, FileText, Clock, ShieldCheck } from "lucide-react"
+import { ArrowLeft, FileText, Clock, ShieldCheck, Download, AlertCircle, CheckCircle, XCircle, Activity, Edit } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
-// 1. Define the type for the props
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
+interface Submission {
+  id: string
+  title: string
+  description: string
+  category: string
+  file_url: string | null
+  status: "pending" | "approved" | "rejected"
+  submitted_at: string
+  reviewed_at: string | null
+  feedback: string | null
+  submission_group: string | null
+  check_in_date: string | null
+  user_id: string
+}
+
 export default function SubmissionPage({ params }: PageProps) {
-  // 2. Unwrap the params Promise using React.use()
   const resolvedParams = React.use(params)
   const submissionId = resolvedParams.id
 
-  const [submission, setSubmission] = useState<any>(null)
+  const [submission, setSubmission] = useState<Submission | null>(null)
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
-  
+
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
     setMounted(true)
-    
+
     async function getSubmission() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -38,7 +54,7 @@ export default function SubmissionPage({ params }: PageProps) {
       const { data, error } = await supabase
         .from("submissions")
         .select("*")
-        .eq("id", submissionId) // Use the unwrapped ID
+        .eq("id", submissionId)
         .eq("user_id", user.id)
         .single()
 
@@ -54,7 +70,27 @@ export default function SubmissionPage({ params }: PageProps) {
     getSubmission()
   }, [submissionId, router, supabase])
 
+  const getStatusIcon = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "approved": return <CheckCircle className="h-4 w-4 text-primary" />
+      case "rejected": return <XCircle className="h-4 w-4 text-destructive" />
+      default: return <Activity className="h-4 w-4 text-yellow-500 animate-pulse" />
+    }
+  }
+
+  const getStatusStyles = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "approved": return "bg-primary/10 border-primary/20 text-primary"
+      case "rejected": return "bg-destructive/10 border-destructive/20 text-destructive"
+      default: return "bg-yellow-500/10 border-yellow-500/20 text-yellow-500"
+    }
+  }
+
   if (!mounted || loading) return <div className="min-h-screen bg-background" />
+
+  if (!submission) return <div className="min-h-screen bg-background" /> // Redirect handled by useEffect
+
+  const canEdit = ["pending", "rejected"].includes(submission.status)
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
@@ -95,7 +131,7 @@ export default function SubmissionPage({ params }: PageProps) {
                     Category: {submission.category}
                   </p>
                 </div>
-                <div className="px-4 py-2 bg-secondary border border-border text-[10px] font-black uppercase tracking-widest italic">
+                <div className={cn("px-4 py-2 bg-secondary border border-border text-[10px] font-black uppercase tracking-widest italic", getStatusStyles(submission.status))}>
                   Status: {submission.status}
                 </div>
               </div>
@@ -104,14 +140,83 @@ export default function SubmissionPage({ params }: PageProps) {
                 <p className="font-medium">{submission.description}</p>
               </div>
 
-              {submission.feedback && (
-                <div className="mt-12 p-8 bg-primary/5 border-l-4 border-primary">
-                  <span className="block text-[10px] font-black uppercase tracking-widest text-primary mb-4 italic">
-                    Officer Evaluation Notes:
-                  </span>
-                  <p className="text-sm italic font-medium">"{submission.feedback}"</p>
+              <div className="mt-8 pt-8 border-t border-border/50 space-y-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-black text-primary uppercase tracking-widest font-mono">Submitted:</span>
+                    <span className="text-[10px] font-bold uppercase tracking-tight">
+                      {format(new Date(submission.submitted_at), "MMM d, yyyy 'at' h:mm a")}
+                    </span>
+                  </div>
+
+                  {submission.submission_group && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-black text-primary uppercase tracking-widest font-mono">Group:</span>
+                      <span className="text-[10px] font-bold uppercase tracking-tight">{submission.submission_group}</span>
+                    </div>
+                  )}
+
+                  {submission.check_in_date && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-black text-primary uppercase tracking-widest font-mono">Check-in:</span>
+                      <span className="text-[10px] font-bold uppercase tracking-tight">
+                        {format(new Date(submission.check_in_date), "MMM d, yyyy")}
+                      </span>
+                    </div>
+                  )}
+
+                  {submission.reviewed_at && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-black text-primary uppercase tracking-widest font-mono">Reviewed:</span>
+                      <span className="text-[10px] font-bold uppercase tracking-tight">
+                        {format(new Date(submission.reviewed_at), "MMM d, yyyy")}
+                      </span>
+                    </div>
+                  )}
                 </div>
+
+                {submission.file_url && (
+                  <div className="flex items-center gap-4 p-4 bg-secondary/30 border border-border rounded-none">
+                    <FileText className="h-8 w-8 text-primary" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Attached File</p>
+                      <p className="text-xs text-muted-foreground font-mono">Click to download</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                    >
+                      <a href={submission.file_url} target="_blank" rel="noopener noreferrer">
+                        <Download className="h-4 w-4 mr-2" /> Download
+                      </a>
+                    </Button>
+                  </div>
+                )}
+
+                {submission.feedback && (
+                  <div className="mt-12 p-8 bg-primary/5 border-l-4 border-primary">
+                    <span className="block text-[10px] font-black uppercase tracking-widest text-primary mb-4 italic">
+                      Officer Evaluation Notes:
+                    </span>
+                    <p className="text-sm italic font-medium">"{submission.feedback}"</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+              {canEdit && (
+                <Button variant="outline" asChild className="flex-1 h-12 rounded-none font-black uppercase tracking-widest text-[10px] italic border-border">
+                  <Link href={`/my/submit?edit=${submission.id}`}>
+                    <Edit className="mr-2 h-4 w-4" /> Edit Submission
+                  </Link>
+                </Button>
               )}
+              <Button variant="outline" asChild className="flex-1 h-12 px-12 rounded-none font-black uppercase tracking-widest text-[10px] italic border-border">
+                <Link href="/my">Return to Terminal</Link>
+              </Button>
             </div>
           </div>
         </div>
